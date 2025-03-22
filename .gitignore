@@ -1,0 +1,49 @@
+# Backend (Spring Boot)
+# Maven
+backend/target/
+backend/*.log
+
+# IntelliJ IDEA
+backend/.idea/
+backend/*.iml
+
+# Spring Boot specific
+backend/*.jar
+backend/*.war
+backend/*.ear
+backend/spring-boot-devtools.jar
+
+# OS-specific files
+backend/.DS_Store
+backend/Thumbs.db
+
+# Log files
+backend/*.log
+
+# Frontend (React / Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/.npm/
+frontend/vite.config.js
+frontend/yarn-error.log
+frontend/npm-debug.log
+frontend/package-lock.json
+frontend/yarn.lock
+
+# TypeScript
+frontend/*.tsbuildinfo
+
+# Environment files
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+frontend/.env.*.local
+
+# OS-specific files
+frontend/.DS_Store
+frontend/Thumbs.db
+
+# VS Code specific
+frontend/.vscode/
