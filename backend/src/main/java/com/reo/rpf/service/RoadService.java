@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PathService {
+public class RoadService {
 
     private final RoadRepository roadRepository;
 

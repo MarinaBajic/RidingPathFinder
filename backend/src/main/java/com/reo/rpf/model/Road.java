@@ -9,11 +9,11 @@ import org.locationtech.jts.geom.MultiLineString;
 @Getter
 @Setter
 @Entity
-@Table(name = "roads")
+@Table(name = "road")
 public class Road {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "roads_id_gen")
-    @SequenceGenerator(name = "roads_id_gen", sequenceName = "roads_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "road_id_gen")
+    @SequenceGenerator(name = "road_id_gen", sequenceName = "road_id_seq", allocationSize = 1)
     @Column(name = "id", nullable = false)
     private Integer id;
 

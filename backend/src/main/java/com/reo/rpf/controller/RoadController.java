@@ -1,7 +1,7 @@
 package com.reo.rpf.controller;
 
 import com.reo.rpf.model.Road;
-import com.reo.rpf.service.PathService;
+import com.reo.rpf.service.RoadService;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
-public class PathController {
+public class RoadController {
 
-    private final PathService pathService;
+    private final RoadService roadService;
 
     @GetMapping("/roads")
     public ResponseEntity<Map<String, Object>> getRoads(@RequestParam double minLng,
@@ -27,7 +27,7 @@ public class PathController {
                                                         @RequestParam double maxLng,
                                                         @RequestParam double maxLat,
                                                         @RequestParam int zoom) {
-        List<Road> roads = pathService.getRoads(minLng, minLat, maxLng, maxLat, zoom);
+        List<Road> roads = roadService.getRoads(minLng, minLat, maxLng, maxLat, zoom);
 
         List<Map<String, Object>> features = roads.stream()
                 .filter(road -> road.getGeom() != null)
