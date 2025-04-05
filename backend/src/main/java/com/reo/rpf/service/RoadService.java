@@ -1,12 +1,18 @@
 package com.reo.rpf.service;
 
+import com.reo.rpf.dto.GeoJson;
+import com.reo.rpf.dto.GeoJsonFeature;
 import com.reo.rpf.model.Road;
 import com.reo.rpf.repository.RoadRepository;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -14,9 +20,16 @@ public class RoadService {
 
     private final RoadRepository roadRepository;
 
-    public List<Road> getRoads(double minLng, double minLat, double maxLng, double maxLat, int zoom) {
+    public GeoJson getRoads(double minLng, double minLat, double maxLng, double maxLat, int zoom) {
         List<String> roadClasses = getRoadClasses(zoom);
-        return roadRepository.findRoadsInBoundsWithClasses(minLng, minLat, maxLng, maxLat, roadClasses);
+        List<Road> roads = roadRepository.findRoadsInBoundsWithClasses(minLng, minLat, maxLng, maxLat, roadClasses);
+
+        List<GeoJsonFeature> features = roads.stream()
+                .filter(road -> road.getGeom() != null)
+                .map(this::createGeoJsonFeature)
+                .toList();
+
+        return new GeoJson("FeatureCollection", features);
     }
 
     private List<String> getRoadClasses(Integer zoom) {
@@ -61,6 +74,31 @@ public class RoadService {
             roadClasses.add("unknown");
         }
         return roadClasses;
+    }
+
+    private GeoJsonFeature createGeoJsonFeature(Road road) {
+        MultiLineString multiLineString = road.getGeom();
+        List<List<List<Double>>> coordinates = new ArrayList<>();
+
+        for (int i = 0; i < multiLineString.getNumGeometries(); i++) {
+            LineString lineString = (LineString) multiLineString.getGeometryN(i);
+            List<List<Double>> lineCoordinates = Arrays.stream(lineString.getCoordinates())
+                    .map(coordinate -> List.of(coordinate.x, coordinate.y))
+                    .toList();
+
+            coordinates.add(lineCoordinates);
+        }
+
+        Map<String, Object> geometry = Map.of(
+                "type", "MultiLineString",
+                "coordinates", coordinates
+        );
+
+        Map<String, Object> properties = Map.of(
+                "name", road.getName() != null ? road.getName() : "Unknown Road"
+        );
+
+        return new GeoJsonFeature("Feature", geometry, properties);
     }
 
 }
