@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { fetchRoads, fetchWaypoints, saveWaypoint } from '../services/mapService';
-import { updateGeoJsonLayer } from '../layers/geoJsonUtils';
-import { handleSaveWaypoint } from '../logic/waypointActions';
+import { fetchRoads, fetchWaypoints } from '../services/mapService';
+import { updateGeoJsonLayer } from '../utils/geoJsonUtils';
+import { handleSaveWaypointPopup } from '../utils/popupUtils';
 
 const Map = () => {
 	const mapContainer = useRef(null);
@@ -73,28 +73,8 @@ const Map = () => {
 
 		const handleMapClick = (e: L.LeafletMouseEvent) => {
 			if (!isAddingWaypoint) return;
-
 			const { lat, lng } = e.latlng;
-			const popupContent = document.createElement('div');
-			popupContent.innerHTML = `
-					<div>
-						<p>Save this location as a waypoint?</p>
-						<button id="save-waypoint" style="cursor:pointer;">Save</button>
-					</div>
-				`;
-
-			popupContent.querySelector('#save-waypoint')?.addEventListener('click', () => {
-				handleSaveWaypoint(lat, lng, handleFetchWaypoints, popupRef.current);
-				setIsAddingWaypoint(false);
-			});
-
-			const popup = L.popup()
-				.setLatLng(e.latlng)
-				.setContent(popupContent)
-				.openOn(map);
-
-			popupRef.current = popup;
-
+			handleSaveWaypointPopup(lat, lng, map, popupRef, setIsAddingWaypoint, handleFetchWaypoints);
 		};
 
 		map.on('click', handleMapClick);
