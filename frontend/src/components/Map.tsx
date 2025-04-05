@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { fetchRoads, fetchWaypoints, saveWaypoint } from './services/mapService';
+import { fetchRoads, fetchWaypoints, saveWaypoint } from '../services/mapService';
+import { updateGeoJsonLayer } from '../layers/geoJsonUtils';
+import { handleSaveWaypoint } from '../logic/waypointActions';
 
 const Map = () => {
 	const mapContainer = useRef(null);
@@ -23,13 +25,7 @@ const Map = () => {
 
 		try {
 			const data = await fetchRoads(bounds, zoom);
-			if (roadLayerRef.current) {
-				roadLayerRef.current.clearLayers();
-				roadLayerRef.current.addData(data);
-			} else {
-				roadLayerRef.current = L.geoJSON(data).addTo(mapRef.current);
-			}
-
+			updateGeoJsonLayer(roadLayerRef, data, mapRef.current);
 			setRoads(data);
 		} catch (error) {
 			console.error('Error fetching roads:', error);
@@ -41,40 +37,32 @@ const Map = () => {
 
 		try {
 			const data = await fetchWaypoints();
-
-			if (waypointLayerRef.current) {
-				waypointLayerRef.current.clearLayers();
-				waypointLayerRef.current.addData(data);
-
-			} else {
-				waypointLayerRef.current = L.geoJSON(data).addTo(mapRef.current);
-			}
-
+			updateGeoJsonLayer(waypointLayerRef, data, mapRef.current);
 			setWaypoints(data);
 		} catch (error) {
 			console.error('Error fetching waypoints:', error);
 		}
 	};
 
-	const handleSaveWaypoint = async (lat: number, lng: number) => {
-		const name = prompt("Enter waypoint name:");
-		if (!name) return;
+	// const handleSaveWaypoint = async (lat: number, lng: number) => {
+	// 	const name = prompt("Enter waypoint name:");
+	// 	if (!name) return;
 
-		const description = prompt("Enter description:");
-		if (!description) return;
+	// 	const description = prompt("Enter description:");
+	// 	if (!description) return;
 
-		const success = await saveWaypoint(name, description, lat, lng);
+	// 	const success = await saveWaypoint(name, description, lat, lng);
 
-		if (success) {
-			alert("Waypoint saved!");
-			handleFetchWaypoints(); // refresh ✨
-			if (popupRef.current) {
-				popupRef.current.remove(); // Close the popup
-			}
-		} else {
-			alert("Failed to save waypoint.");
-		}
-	};
+	// 	if (success) {
+	// 		alert("Waypoint saved!");
+	// 		handleFetchWaypoints(); // refresh ✨
+	// 		if (popupRef.current) {
+	// 			popupRef.current.remove(); // Close the popup
+	// 		}
+	// 	} else {
+	// 		alert("Failed to save waypoint.");
+	// 	}
+	// };
 
 	useEffect(() => {
 		if (mapContainer.current && !mapRef.current) {
@@ -101,31 +89,32 @@ const Map = () => {
 
 	useEffect(() => {
 		if (!mapRef.current) return;
-
 		const map = mapRef.current;
 
 		const handleMapClick = (e: L.LeafletMouseEvent) => {
 			if (!isAddingWaypoint) return;
 
 			const { lat, lng } = e.latlng;
-
-			const popup = L.popup()
-				.setLatLng(e.latlng)
-				.setContent(`
+			const popupContent = document.createElement('div');
+			popupContent.innerHTML = `
 					<div>
 						<p>Save this location as a waypoint?</p>
 						<button id="save-waypoint" style="cursor:pointer;">Save</button>
 					</div>
-				`)
-				.openOn(mapRef.current!);
+				`;
+
+			popupContent.querySelector('#save-waypoint')?.addEventListener('click', () => {
+				handleSaveWaypoint(lat, lng, handleFetchWaypoints, popupRef.current);
+				setIsAddingWaypoint(false);
+			});
+
+			const popup = L.popup()
+				.setLatLng(e.latlng)
+				.setContent(popupContent)
+				.openOn(map);
 
 			popupRef.current = popup;
 
-			document.getElementById("save-waypoint")?.addEventListener("click", () => {
-				handleSaveWaypoint(lat, lng);
-			});
-
-			setIsAddingWaypoint(false); // disable after adding
 		};
 
 		map.on('click', handleMapClick);
