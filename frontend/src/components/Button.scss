@@ -1,0 +1,25 @@
+.primary {
+    background-color: var(--color-accent);
+
+    &:hover {
+        background-color: var(--color-accent-light);
+    }
+}
+
+.secondary {
+    background-color: var(--color-dark);
+    color: var(--color-light);
+
+    &:hover {
+        background-color: hsl(135, 38%, 28%);
+    }
+}
+
+.tertiary {
+    border-radius: 0;
+    padding: .2rem;
+
+    &:hover {
+        box-shadow: 0 -1px inset;
+    }
+}

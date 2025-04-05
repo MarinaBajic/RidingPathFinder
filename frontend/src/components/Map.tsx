@@ -3,6 +3,7 @@ import L from 'leaflet';
 import { fetchRoads, fetchWaypoints } from '../services/mapService';
 import { updateGeoJsonLayer } from '../utils/geoJsonUtils';
 import { handleSaveWaypointPopup } from '../utils/popupUtils';
+import Button from './Button';
 
 const Map = () => {
 	const mapContainer = useRef(null);
@@ -86,12 +87,13 @@ const Map = () => {
 
 
 	return (
-		<div>
+		<div className="full-width bg-(--color-dark) scroll-mt-32 py-16">
 			<div
+				id='map'
 				ref={mapContainer}
-				style={{ height: '100vh', width: '100%' }}
+				className="h-[70dvh] w-full shadow-lg rounded-xl mx-auto"
 			/>
-			<button onClick={() => setIsAddingWaypoint(true)}>Add Waypoint</button>
+			<Button onClick={() => setIsAddingWaypoint(true)}>Add new Waypoint</Button>
 		</div>
 	);
 };
