@@ -1,42 +1,36 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+:root {
+  --color-light: #f2f2f2;
+  --color-dark: hsl(135, 38%, 18%);
+  --color-accent: hsl(27, 48%, 49%);
+  --color-accent-light: hsl(27, 48%, 59%);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+html {
+  scroll-behavior: smooth;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+body {
+  background-color: var(--color-light);
+  color: var(--color-dark);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.content-grid {
+  --padding-inline: 2rem;
+  --content-max-width: 73.75rem;
+
+  display: grid;
+  grid-template-columns:
+    [full-width-start] minmax(var(--padding-inline), 1fr) [content-start] min(100% - (var(--padding-inline) * 2), var(--content-max-width)) [content-end] minmax(var(--padding-inline), 1fr) [full-width-end];
+  row-gap: 4rem;
 }
 
-.card {
-  padding: 2em;
+.content-grid> :not(.full-width),
+.full-width> :not(.full-width) {
+  grid-column: content;
 }
 
-.read-the-docs {
-  color: #888;
+.content-grid>.full-width {
+  grid-column: full-width;
+  display: grid;
+  grid-template-columns: inherit;
 }
