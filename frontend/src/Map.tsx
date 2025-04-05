@@ -12,6 +12,8 @@ const Map = () => {
 	const [roads, setRoads] = useState([]);
 	const [waypoints, setWaypoints] = useState([]);
 
+	const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
+
 
 	const handleFetchRoads = async () => {
 		if (!mapRef.current) return;
@@ -85,29 +87,6 @@ const Map = () => {
 			mapRef.current.on('moveend', handleFetchRoads);
 			mapRef.current.on('zoomend', handleFetchWaypoints);
 
-			mapRef.current.on("click", (e: L.LeafletMouseEvent) => {
-				const { lat, lng } = e.latlng;
-
-				const popup = L.popup()
-					.setLatLng(e.latlng)
-					.setContent(`
-						<div>
-							<p>Save this location as a waypoint?</p>
-							<button id="save-waypoint" style="cursor:pointer;">Save</button>
-						</div>
-					`)
-					.openOn(mapRef.current!);
-
-				popupRef.current = popup;
-
-				// Wait a bit to make sure the DOM exists
-				setTimeout(() => {
-					document.getElementById("save-waypoint")?.addEventListener("click", () => {
-						handleSaveWaypoint(lat, lng);
-					});
-				}, 100);
-			});
-
 			handleFetchRoads();
 			handleFetchWaypoints();
 		}
@@ -120,11 +99,51 @@ const Map = () => {
 		};
 	}, []);
 
+	useEffect(() => {
+		if (!mapRef.current) return;
+
+		const map = mapRef.current;
+
+		const handleMapClick = (e: L.LeafletMouseEvent) => {
+			if (!isAddingWaypoint) return;
+
+			const { lat, lng } = e.latlng;
+
+			const popup = L.popup()
+				.setLatLng(e.latlng)
+				.setContent(`
+					<div>
+						<p>Save this location as a waypoint?</p>
+						<button id="save-waypoint" style="cursor:pointer;">Save</button>
+					</div>
+				`)
+				.openOn(mapRef.current!);
+
+			popupRef.current = popup;
+
+			document.getElementById("save-waypoint")?.addEventListener("click", () => {
+				handleSaveWaypoint(lat, lng);
+			});
+
+			setIsAddingWaypoint(false); // disable after adding
+		};
+
+		map.on('click', handleMapClick);
+
+		return () => {
+			map.off('click', handleMapClick);
+		};
+	}, [isAddingWaypoint]);
+
+
 	return (
-		<div
-			ref={mapContainer}
-			style={{ height: '100vh', width: '100%' }}
-		/>
+		<div>
+			<div
+				ref={mapContainer}
+				style={{ height: '100vh', width: '100%' }}
+			/>
+			<button onClick={() => setIsAddingWaypoint(true)}>Add Waypoint</button>
+		</div>
 	);
 };
 
