@@ -44,26 +44,6 @@ const Map = () => {
 		}
 	};
 
-	// const handleSaveWaypoint = async (lat: number, lng: number) => {
-	// 	const name = prompt("Enter waypoint name:");
-	// 	if (!name) return;
-
-	// 	const description = prompt("Enter description:");
-	// 	if (!description) return;
-
-	// 	const success = await saveWaypoint(name, description, lat, lng);
-
-	// 	if (success) {
-	// 		alert("Waypoint saved!");
-	// 		handleFetchWaypoints(); // refresh ✨
-	// 		if (popupRef.current) {
-	// 			popupRef.current.remove(); // Close the popup
-	// 		}
-	// 	} else {
-	// 		alert("Failed to save waypoint.");
-	// 	}
-	// };
-
 	useEffect(() => {
 		if (mapContainer.current && !mapRef.current) {
 			mapRef.current = L.map(mapContainer.current).setView([45.2671, 19.8335], 13);
