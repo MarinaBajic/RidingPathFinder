@@ -1,27 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
+import { fetchRoads, fetchWaypoints, saveWaypoint } from './services/mapService';
 
 const Map = () => {
 	const mapContainer = useRef(null);
 	const mapRef = useRef<L.Map | null>(null);
 	const roadLayerRef = useRef<L.GeoJSON | null>(null);
-	const waypointLayerRef = useRef<L.GeoJSON  | null>(null);
+	const waypointLayerRef = useRef<L.GeoJSON | null>(null);
+	const popupRef = useRef<L.Popup | null>(null);
 
 	const [roads, setRoads] = useState([]);
 	const [waypoints, setWaypoints] = useState([]);
 
 
-	const fetchRoads = async () => {
+	const handleFetchRoads = async () => {
 		if (!mapRef.current) return;
 
 		const bounds = mapRef.current.getBounds();
 		const zoom = mapRef.current.getZoom();
-		const url = `http://localhost:8080/api/roads?minLng=${bounds.getWest()}&minLat=${bounds.getSouth()}&maxLng=${bounds.getEast()}&maxLat=${bounds.getNorth()}&zoom=${zoom}`;
 
 		try {
-			const response = await fetch(url);
-			const data = await response.json();
-
+			const data = await fetchRoads(bounds, zoom);
 			if (roadLayerRef.current) {
 				roadLayerRef.current.clearLayers();
 				roadLayerRef.current.addData(data);
@@ -35,14 +34,11 @@ const Map = () => {
 		}
 	};
 
-	const fetchWaypoints = async () => {
+	const handleFetchWaypoints = async () => {
 		if (!mapRef.current) return;
 
-		const url = "http://localhost:8080/api/waypoints";
-
 		try {
-			const response = await fetch(url);
-			const data = await response.json();
+			const data = await fetchWaypoints();
 
 			if (waypointLayerRef.current) {
 				waypointLayerRef.current.clearLayers();
@@ -53,19 +49,28 @@ const Map = () => {
 			}
 
 			setWaypoints(data);
-
-			// Loop through waypoints data
-			// data.forEach((waypoint: any) => {
-			// 	const { name, description, location } = waypoint;
-			// 	const [latitude, longitude] = location.coordinates;
-
-			// 	// Create a marker for each waypoint
-			// 	const marker = L.marker([latitude, longitude]);
-			// 	marker.bindPopup(`<b>${name}</b><br>${description}`);
-			// 	marker.addTo(waypointLayerRef.current!);
-			// });
 		} catch (error) {
 			console.error('Error fetching waypoints:', error);
+		}
+	};
+
+	const handleSaveWaypoint = async (lat: number, lng: number) => {
+		const name = prompt("Enter waypoint name:");
+		if (!name) return;
+
+		const description = prompt("Enter description:");
+		if (!description) return;
+
+		const success = await saveWaypoint(name, description, lat, lng);
+
+		if (success) {
+			alert("Waypoint saved!");
+			handleFetchWaypoints(); // refresh ✨
+			if (popupRef.current) {
+				popupRef.current.remove(); // Close the popup
+			}
+		} else {
+			alert("Failed to save waypoint.");
 		}
 	};
 
@@ -77,16 +82,39 @@ const Map = () => {
 				attribution: '© OpenStreetMap contributors',
 			}).addTo(mapRef.current);
 
-			mapRef.current.on('moveend', fetchRoads);
-			mapRef.current.on('zoomend', fetchRoads);
+			mapRef.current.on('moveend', handleFetchRoads);
+			mapRef.current.on('zoomend', handleFetchWaypoints);
 
-			fetchRoads();
-			fetchWaypoints();
+			mapRef.current.on("click", (e: L.LeafletMouseEvent) => {
+				const { lat, lng } = e.latlng;
+
+				const popup = L.popup()
+					.setLatLng(e.latlng)
+					.setContent(`
+						<div>
+							<p>Save this location as a waypoint?</p>
+							<button id="save-waypoint" style="cursor:pointer;">Save</button>
+						</div>
+					`)
+					.openOn(mapRef.current!);
+
+				popupRef.current = popup;
+
+				// Wait a bit to make sure the DOM exists
+				setTimeout(() => {
+					document.getElementById("save-waypoint")?.addEventListener("click", () => {
+						handleSaveWaypoint(lat, lng);
+					});
+				}, 100);
+			});
+
+			handleFetchRoads();
+			handleFetchWaypoints();
 		}
 
 		return () => {
-			mapRef.current?.off('moveend', fetchRoads);
-			mapRef.current?.off('zoomend', fetchRoads);
+			mapRef.current?.off('moveend', handleFetchRoads);
+			mapRef.current?.off('zoomend', handleFetchRoads);
 			mapRef.current?.remove();
 			mapRef.current = null;
 		};
