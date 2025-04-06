@@ -1,6 +1,6 @@
 import './App.css'
-import Hero from './components/Hero';
-import Map from './components/Map';
+import Hero from './components/hero/Hero';
+import Map from './components/map/Map';
 import 'leaflet/dist/leaflet.css';
 
 function App() {

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { fetchRoads, fetchWaypoints } from '../services/mapService';
-import { updateGeoJsonLayer } from '../utils/geoJsonUtils';
-import { handleSaveWaypointPopup } from '../utils/popupUtils';
-import Button from './Button';
+import { fetchRoads, fetchWaypoints } from '../../services/mapService';
+import { updateGeoJsonLayer } from '../../utils/geoJsonUtils';
+import { handleSaveWaypointPopup } from '../../utils/popupUtils';
+import Button from '../button/Button';
 
 const Map = () => {
 	const mapContainer = useRef(null);
