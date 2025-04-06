@@ -7,9 +7,16 @@ const MapSection = () => {
 
     return (
         <div className="full-width bg-(--color-dark) scroll-mt-32 py-16">
-			<Map isAddingWaypoint={isAddingWaypoint} setIsAddingWaypoint={setIsAddingWaypoint} />
-			<Button onClick={() => setIsAddingWaypoint(true)}>Add new Waypoint</Button>
-		</div>
+            {isAddingWaypoint && (
+                <p className="text-center text-white mb-4 animate-pulse">
+                    Click on the map to add a waypoint ✨
+                </p>
+            )}
+            <Map isAddingWaypoint={isAddingWaypoint} setIsAddingWaypoint={setIsAddingWaypoint} />
+            <Button onClick={() => setIsAddingWaypoint(prev => !prev)}>
+                {isAddingWaypoint ? 'Cancel adding Waypoint' : 'Add new Waypoint'}
+            </Button>
+        </div>
     )
 }
 
