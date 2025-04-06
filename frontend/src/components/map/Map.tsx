@@ -1,11 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { fetchRoads, fetchWaypoints } from '../../services/mapService';
 import { updateGeoJsonLayer } from '../../utils/geoJsonUtils';
 import { handleSaveWaypointPopup } from '../../utils/popupUtils';
-import Button from '../button/Button';
 
-const Map = () => {
+interface MapProps {
+	isAddingWaypoint: boolean;
+	setIsAddingWaypoint: Dispatch<SetStateAction<boolean>>;
+}
+
+const Map = ({ isAddingWaypoint, setIsAddingWaypoint }: MapProps) => {
 	const mapContainer = useRef(null);
 	const mapRef = useRef<L.Map | null>(null);
 	const roadLayerRef = useRef<L.GeoJSON | null>(null);
@@ -14,9 +18,6 @@ const Map = () => {
 
 	const [roads, setRoads] = useState([]);
 	const [waypoints, setWaypoints] = useState([]);
-
-	const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
-
 
 	const handleFetchRoads = async () => {
 		if (!mapRef.current) return;
@@ -87,14 +88,11 @@ const Map = () => {
 
 
 	return (
-		<div className="full-width bg-(--color-dark) scroll-mt-32 py-16">
-			<div
-				id='map'
-				ref={mapContainer}
-				className="h-[70dvh] w-full shadow-lg rounded-xl mx-auto"
-			/>
-			<Button onClick={() => setIsAddingWaypoint(true)}>Add new Waypoint</Button>
-		</div>
+		<div
+			id='map'
+			ref={mapContainer}
+			className="h-[70dvh] w-full shadow-lg rounded-xl mx-auto"
+		/>
 	);
 };
 
