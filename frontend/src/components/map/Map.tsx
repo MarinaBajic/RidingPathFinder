@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { fetchRoads, fetchWaypoints } from '../../services/mapService';
+import { fetchWaypointInfo, fetchWaypoints } from "../../services/waypointService";
+import { fetchRoads } from "../../services/roadService";
 import { updateGeoJsonLayer } from '../../utils/geoJsonUtils';
 import { handleSaveWaypointPopup } from '../../utils/popupUtils';
 
@@ -40,6 +41,26 @@ const Map = ({ isAddingWaypoint, setIsAddingWaypoint }: MapProps) => {
 		try {
 			const data = await fetchWaypoints();
 			updateGeoJsonLayer(waypointLayerRef, data, mapRef.current);
+
+			waypointLayerRef.current?.eachLayer((layer) => {
+				layer.on('click', async () => {
+					const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
+					try {
+						const waypointData = await fetchWaypointInfo(id);
+						if (popupRef.current) {
+							popupRef.current.remove();
+						}
+						popupRef.current = L.popup()
+							.setLatLng((layer as L.Marker).getLatLng())
+							.setContent(`Name: ${waypointData.name}<br>Description: ${waypointData.description}`)
+							.openOn(mapRef.current!);
+					}
+					catch (error) {
+						console.error('Error fetching waypoint info:', error);
+					}
+				});
+			});
+
 			setWaypoints(data);
 		} catch (error) {
 			console.error('Error fetching waypoints:', error);
