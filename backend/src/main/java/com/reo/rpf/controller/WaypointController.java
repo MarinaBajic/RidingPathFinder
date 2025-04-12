@@ -15,9 +15,18 @@ public class WaypointController {
 
     private final WaypointService waypointService;
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Boolean> delete(@PathVariable Integer id) {
+        boolean deleted = waypointService.delete(id);
+        if (deleted) {
+            return new ResponseEntity<>(true, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<WaypointDto> getWaypoint(@PathVariable Integer id) {
-        WaypointDto waypointDto = waypointService.getWaypoint(id);
+    public ResponseEntity<WaypointDto> getEntity(@PathVariable Integer id) {
+        WaypointDto waypointDto = waypointService.getEntity(id);
         if (waypointDto == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -25,12 +34,12 @@ public class WaypointController {
     }
 
     @PostMapping
-    public ResponseEntity<WaypointDto> addWaypoint(@RequestBody WaypointDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(waypointService.addWaypoint(dto));
+    public ResponseEntity<WaypointDto> create(@RequestBody WaypointDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(waypointService.create(dto));
     }
 
     @GetMapping
-    public ResponseEntity<GeoJson> getWaypoints() {
-        return ResponseEntity.ok(waypointService.getWaypoints());
+    public ResponseEntity<GeoJson> get() {
+        return ResponseEntity.ok(waypointService.get());
     }
 }

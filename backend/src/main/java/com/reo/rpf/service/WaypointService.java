@@ -21,7 +21,17 @@ public class WaypointService {
 
     private final WaypointRepository waypointRepository;
 
-    public WaypointDto getWaypoint(Integer id) {
+    public boolean delete(Integer id) {
+        Optional<Waypoint> waypointOptional = waypointRepository.findById(id);
+        if (waypointOptional.isEmpty()) {
+            return false;
+        }
+        Waypoint waypoint = waypointOptional.get();
+        waypointRepository.delete(waypoint);
+        return true;
+    }
+
+    public WaypointDto getEntity(Integer id) {
         Optional<Waypoint> waypointOptional = waypointRepository.findById(id);
         if (waypointOptional.isEmpty()) {
             return null;
@@ -30,7 +40,7 @@ public class WaypointService {
         return new WaypointDto(waypoint.getName(), waypoint.getDescription(), waypoint.getLocation().getX(), waypoint.getLocation().getY());
     }
 
-    public WaypointDto addWaypoint(WaypointDto waypointDto) {
+    public WaypointDto create(WaypointDto waypointDto) {
         Point location = new GeometryFactory().createPoint(new Coordinate(waypointDto.latitude(), waypointDto.longitude()));
 
         Waypoint waypoint = new Waypoint();
@@ -42,7 +52,7 @@ public class WaypointService {
         return new WaypointDto(saved.getName(), saved.getDescription(), saved.getLocation().getX(), saved.getLocation().getY());
     }
 
-    public GeoJson getWaypoints() {
+    public GeoJson get() {
         List<Waypoint> waypoints = waypointRepository.findAll();
 
         List<GeoJsonFeature> features = waypoints.stream()
