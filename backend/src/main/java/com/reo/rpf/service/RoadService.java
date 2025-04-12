@@ -20,7 +20,7 @@ public class RoadService {
 
     private final RoadRepository roadRepository;
 
-    public GeoJson getRoads(double minLng, double minLat, double maxLng, double maxLat, int zoom) {
+    public GeoJson get(double minLng, double minLat, double maxLng, double maxLat, int zoom) {
         List<String> roadClasses = getRoadClasses(zoom);
         List<Road> roads = roadRepository.findRoadsInBoundsWithClasses(minLng, minLat, maxLng, maxLat, roadClasses);
 

@@ -14,11 +14,11 @@ public class RoadController {
     private final RoadService roadService;
 
     @GetMapping
-    public ResponseEntity<GeoJson> getRoads(@RequestParam double minLng,
+    public ResponseEntity<GeoJson> get(@RequestParam double minLng,
                                             @RequestParam double minLat,
                                             @RequestParam double maxLng,
                                             @RequestParam double maxLat,
                                             @RequestParam int zoom) {
-        return ResponseEntity.ok(roadService.getRoads(minLng, minLat, maxLng, maxLat, zoom));
+        return ResponseEntity.ok(roadService.get(minLng, minLat, maxLng, maxLat, zoom));
     }
 }
