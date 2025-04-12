@@ -15,6 +15,15 @@ public class WaypointController {
 
     private final WaypointService waypointService;
 
+    @GetMapping("/{id}")
+    public ResponseEntity<WaypointDto> getWaypoint(@PathVariable Integer id) {
+        WaypointDto waypointDto = waypointService.getWaypoint(id);
+        if (waypointDto == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(waypointDto, HttpStatus.OK);
+    }
+
     @PostMapping
     public ResponseEntity<WaypointDto> addWaypoint(@RequestBody WaypointDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(waypointService.addWaypoint(dto));

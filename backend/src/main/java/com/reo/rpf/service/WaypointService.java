@@ -13,12 +13,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class WaypointService {
 
     private final WaypointRepository waypointRepository;
+
+    public WaypointDto getWaypoint(Integer id) {
+        Optional<Waypoint> waypointOptional = waypointRepository.findById(id);
+        if (waypointOptional.isEmpty()) {
+            return null;
+        }
+        Waypoint waypoint = waypointOptional.get();
+        return new WaypointDto(waypoint.getName(), waypoint.getDescription(), waypoint.getLocation().getX(), waypoint.getLocation().getY());
+    }
 
     public WaypointDto addWaypoint(WaypointDto waypointDto) {
         Point location = new GeometryFactory().createPoint(new Coordinate(waypointDto.latitude(), waypointDto.longitude()));
@@ -52,6 +62,7 @@ public class WaypointService {
         );
 
         Map<String, Object> properties = Map.of(
+                "id", waypoint.getId(),
                 "name", waypoint.getName(),
                 "description", waypoint.getDescription()
         );
