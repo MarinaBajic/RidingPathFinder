@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { fetchWaypointInfo, fetchWaypoints } from "../../services/waypointService";
+import { deleteWaypoint, fetchWaypointInfo, fetchWaypoints } from "../../services/waypointService";
 import { fetchRoads } from "../../services/roadService";
 import { updateGeoJsonLayer } from '../../utils/geoJsonUtils';
 import { handleSaveWaypointPopup } from '../../utils/popupUtils';
@@ -52,8 +52,26 @@ const Map = ({ isAddingWaypoint, setIsAddingWaypoint }: MapProps) => {
 						}
 						popupRef.current = L.popup()
 							.setLatLng((layer as L.Marker).getLatLng())
-							.setContent(`Name: ${waypointData.name}<br>Description: ${waypointData.description}`)
+							.setContent(`Name: ${waypointData.name}<br>
+										Description: ${waypointData.description}<br><br>
+										<button id="delete-waypoint-btn">🗑️ Delete</button>`)
 							.openOn(mapRef.current!);
+
+						setTimeout(() => {
+							const btn = document.getElementById('delete-waypoint-btn');
+							if (btn) {
+								btn.addEventListener('click', async () => {
+									try {
+										await deleteWaypoint(id);
+										popupRef.current?.remove();
+										await handleFetchWaypoints(); // refresh map
+									} catch (err) {
+										console.error('Error deleting waypoint:', err);
+									}
+								});
+							}
+						}, 0);
+
 					}
 					catch (error) {
 						console.error('Error fetching waypoint info:', error);

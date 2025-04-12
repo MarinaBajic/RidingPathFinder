@@ -1,6 +1,17 @@
 import { API_BASE } from "./mapService";
 
 
+export const deleteWaypoint = async (id: number) => {
+	const res = await fetch(`${API_BASE}/waypoints/${id}`, {
+		method: "DELETE",
+		headers: { "Content-Type": "application/json" },
+	});
+	if (res.status === 404) {	
+		throw new Error("Failed to delete waypoint");
+	}
+	return res.ok;
+}
+
 export const fetchWaypointInfo = async (id: number) => {
 	const res = await fetch(`${API_BASE}/waypoints/${id}`);
 	if (res.status === 404) {
