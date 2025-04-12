@@ -1,4 +1,4 @@
-import { saveWaypoint } from '../services/mapService';
+import { saveWaypoint } from "../services/waypointService";
 
 export const handleSaveWaypoint = async (
     lat: number,
