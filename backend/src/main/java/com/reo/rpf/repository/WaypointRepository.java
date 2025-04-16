@@ -17,6 +17,16 @@ public interface WaypointRepository extends JpaRepository<Waypoint, Integer> {
         :radius
     )
 """, nativeQuery = true)
-    List<Waypoint> findNearby(@Param("id") Integer id, @Param("radius") double radius);
+    List<Waypoint> findNearbyFromWaypoint(@Param("id") Integer id, @Param("radius") double radius);
+
+    @Query(value = """
+    SELECT * FROM waypoint w
+    WHERE ST_DWithin(
+        w.location::geography,
+        ST_SetSRID(ST_MakePoint(:lat, :lng), 4326)::geography,
+        :radius
+    )
+""", nativeQuery = true)
+    List<Waypoint> findNearbyFromLocation(@Param("lat") double lat, @Param("lng") double lng, @Param("radius") double radius);
 
 }

@@ -15,14 +15,22 @@ public class WaypointController {
 
     private final WaypointService waypointService;
 
+    @GetMapping("/nearby")
+    public ResponseEntity<GeoJson> getNearbyFromLocation(
+            @RequestParam double lat,
+            @RequestParam double lng,
+            @RequestParam double radius
+    ) {
+        return ResponseEntity.ok(waypointService.getNearbyFromLocation(lat, lng, radius));
+    }
+
     @GetMapping("/{id}/nearby")
-    public ResponseEntity<GeoJson> getNearbyWaypoints(
+    public ResponseEntity<GeoJson> getNearbyFromWaypoint(
             @PathVariable Integer id,
             @RequestParam double radius
     ) {
-        return ResponseEntity.ok(waypointService.getNearbyWaypoints(id, radius));
+        return ResponseEntity.ok(waypointService.getNearbyFromWaypoint(id, radius));
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean> delete(@PathVariable Integer id) {
