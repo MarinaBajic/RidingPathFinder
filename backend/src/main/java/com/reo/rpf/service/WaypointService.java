@@ -21,6 +21,16 @@ public class WaypointService {
 
     private final WaypointRepository waypointRepository;
 
+    public GeoJson getNearbyWaypoints(Integer id, double radius) {
+        List<Waypoint> nearbyWaypoints = waypointRepository.findNearby(id, radius);
+
+        List<GeoJsonFeature> features = nearbyWaypoints.stream()
+                .map(this::createGeoJsonFeature)
+                .toList();
+
+        return new GeoJson("FeatureCollection", features);
+    }
+
     public boolean delete(Integer id) {
         Optional<Waypoint> waypointOptional = waypointRepository.findById(id);
         if (waypointOptional.isEmpty()) {

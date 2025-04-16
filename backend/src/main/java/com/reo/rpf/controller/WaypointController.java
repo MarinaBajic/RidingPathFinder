@@ -15,6 +15,15 @@ public class WaypointController {
 
     private final WaypointService waypointService;
 
+    @GetMapping("/{id}/nearby")
+    public ResponseEntity<GeoJson> getNearbyWaypoints(
+            @PathVariable Integer id,
+            @RequestParam double radius
+    ) {
+        return ResponseEntity.ok(waypointService.getNearbyWaypoints(id, radius));
+    }
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean> delete(@PathVariable Integer id) {
         boolean deleted = waypointService.delete(id);
