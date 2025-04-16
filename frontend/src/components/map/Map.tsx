@@ -1,24 +1,30 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { deleteWaypoint, fetchWaypointInfo, fetchWaypoints } from "../../services/waypointService";
+import { deleteWaypoint, fetchNearbyFromWaypoint, fetchWaypointInfo, fetchWaypoints } from "../../services/waypointService";
 import { fetchRoads } from "../../services/roadService";
-import { updateGeoJsonLayer } from '../../utils/geoJsonUtils';
+import { updateGeoJsonLayer, updateGeoJsonLayerMarkers } from '../../utils/geoJsonUtils';
 import { handleSaveWaypointPopup } from '../../utils/popupUtils';
 
 interface MapProps {
 	isAddingWaypoint: boolean;
 	setIsAddingWaypoint: Dispatch<SetStateAction<boolean>>;
+	radius: number;
 }
 
-const Map = ({ isAddingWaypoint, setIsAddingWaypoint }: MapProps) => {
+const Map = ({ isAddingWaypoint, setIsAddingWaypoint, radius }: MapProps) => {
 	const mapContainer = useRef(null);
 	const mapRef = useRef<L.Map | null>(null);
+
 	const roadLayerRef = useRef<L.GeoJSON | null>(null);
+
 	const waypointLayerRef = useRef<L.GeoJSON | null>(null);
+	const highlightLayerRef = useRef<L.GeoJSON | null>(null);
+
 	const popupRef = useRef<L.Popup | null>(null);
 
 	const [roads, setRoads] = useState([]);
-	const [waypoints, setWaypoints] = useState([]);
+	const [waypoints, setWaypoints] = useState<L.Marker[]>([]);
+	const [highlightedWaypoints, setHighlightedWaypoints] = useState<L.Marker[]>([]);
 
 	const handleFetchRoads = async () => {
 		if (!mapRef.current) return;
@@ -40,48 +46,72 @@ const Map = ({ isAddingWaypoint, setIsAddingWaypoint }: MapProps) => {
 
 		try {
 			const data = await fetchWaypoints();
-			updateGeoJsonLayer(waypointLayerRef, data, mapRef.current);
+			updateGeoJsonLayerMarkers(waypointLayerRef, data, mapRef.current, 'blue');
 
 			waypointLayerRef.current?.eachLayer((layer) => {
 				layer.on('click', async () => {
-					const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
-					try {
-						const waypointData = await fetchWaypointInfo(id);
-						if (popupRef.current) {
-							popupRef.current.remove();
-						}
-						popupRef.current = L.popup()
-							.setLatLng((layer as L.Marker).getLatLng())
-							.setContent(`Name: ${waypointData.name}<br>
-										Description: ${waypointData.description}<br><br>
-										<button id="delete-waypoint-btn">🗑️ Delete</button>`)
-							.openOn(mapRef.current!);
-
-						setTimeout(() => {
-							const btn = document.getElementById('delete-waypoint-btn');
-							if (btn) {
-								btn.addEventListener('click', async () => {
-									try {
-										await deleteWaypoint(id);
-										popupRef.current?.remove();
-										await handleFetchWaypoints(); // refresh map
-									} catch (err) {
-										console.error('Error deleting waypoint:', err);
-									}
-								});
-							}
-						}, 0);
-
-					}
-					catch (error) {
-						console.error('Error fetching waypoint info:', error);
-					}
+					handleWaypointClick(layer);
 				});
 			});
 
 			setWaypoints(data);
 		} catch (error) {
 			console.error('Error fetching waypoints:', error);
+		}
+	};
+
+	const handleFetchNearbyWaypoints = async (id: number) => {
+		if (!mapRef.current) return;
+
+		try {
+			const data = await fetchNearbyFromWaypoint(id, radius);
+			updateGeoJsonLayerMarkers(highlightLayerRef, data, mapRef.current, 'red');
+
+			highlightLayerRef.current?.eachLayer((layer) => {
+				layer.on('click', async () => {
+					handleWaypointClick(layer);
+				});
+			});
+
+			setHighlightedWaypoints(data);
+		} catch (error) {
+			console.error('Error fetching nearby waypoints:', error);
+		}
+	};
+
+	const handleWaypointClick = async (layer: L.Layer) => {
+		const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
+		try {
+			const waypointData = await fetchWaypointInfo(id);
+			if (popupRef.current) {
+				popupRef.current.remove();
+			}
+			popupRef.current = L.popup()
+				.setLatLng((layer as L.Marker).getLatLng())
+				.setContent(`Name: ${waypointData.name}<br>
+                             Description: ${waypointData.description}<br><br>
+                             <button id="delete-waypoint-btn">🗑️ Delete</button>`)
+				.openOn(mapRef.current!);
+
+			setTimeout(() => {
+				const btn = document.getElementById('delete-waypoint-btn');
+				if (btn) {
+					btn.addEventListener('click', async () => {
+						try {
+							await deleteWaypoint(id);
+							popupRef.current?.remove();
+							await handleFetchWaypoints(); // refresh map
+						} catch (err) {
+							console.error('Error deleting waypoint:', err);
+						}
+					});
+				}
+			}, 0);
+
+			handleFetchNearbyWaypoints(id);
+		}
+		catch (error) {
+			console.error('Error fetching waypoint info:', error);
 		}
 	};
 

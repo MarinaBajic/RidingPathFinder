@@ -12,3 +12,30 @@ export const updateGeoJsonLayer = (
         layerRef.current = L.geoJSON(data).addTo(map);
     }
 };
+
+export const updateGeoJsonLayerMarkers = (
+    layerRef: React.RefObject<L.GeoJSON | null>,
+    data: GeoJSON.GeoJsonObject,
+    map: L.Map,
+    markerColor: string
+) => {
+    const icon = L.icon({
+        iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${markerColor}.png`,
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    if (layerRef.current) {
+        layerRef.current.clearLayers();
+        layerRef.current.addData(data);
+    } else {
+        layerRef.current = L.geoJSON(data, {
+            pointToLayer: (_feature, latlng) => {
+                return L.marker(latlng, { icon });
+            }
+        }).addTo(map);
+    }
+};

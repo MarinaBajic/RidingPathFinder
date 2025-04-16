@@ -1,12 +1,22 @@
 import { API_BASE } from "./mapService";
 
 
+export const fetchNearbyFromLocation = async (lat: number, lng: number, radius: number) => {
+	const res = await fetch(`${API_BASE}/waypoints/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
+	return await res.json();
+};
+
+export const fetchNearbyFromWaypoint = async (id: number, radius: number) => {
+	const res = await fetch(`${API_BASE}/waypoints/${id}/nearby?radius=${radius}`);
+	return await res.json();
+};
+
 export const deleteWaypoint = async (id: number) => {
 	const res = await fetch(`${API_BASE}/waypoints/${id}`, {
 		method: "DELETE",
 		headers: { "Content-Type": "application/json" },
 	});
-	if (res.status === 404) {	
+	if (res.status === 404) {
 		throw new Error("Failed to delete waypoint");
 	}
 	return res.ok;
