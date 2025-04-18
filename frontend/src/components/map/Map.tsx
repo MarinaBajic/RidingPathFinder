@@ -91,6 +91,7 @@ const Map = ({ isAddingWaypoint, setIsAddingWaypoint, radius }: MapProps) => {
 				.setContent(`Name: ${waypointData.name}<br>
                              Description: ${waypointData.description}<br><br>
                              <button id="delete-waypoint-btn">🗑️ Delete</button>`)
+				.setLatLng([(layer as L.Marker).getLatLng().lat + 0.0006, (layer as L.Marker).getLatLng().lng])
 				.openOn(mapRef.current!);
 
 			setTimeout(() => {

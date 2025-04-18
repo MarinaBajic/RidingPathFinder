@@ -17,7 +17,7 @@ const MapSection = () => {
                     setIsAddingWaypoint={setIsAddingWaypoint}
                     radius={radius}
                 />
-                <div className="flex gap-4 flex-col w-full max-w-[400px]">
+                <div className="flex gap-4 flex-col w-full max-w-[400px] mx-auto">
                     <Instructions />
                     <Info />
                 </div>
