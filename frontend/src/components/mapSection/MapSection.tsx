@@ -2,6 +2,7 @@ import { useState } from "react";
 import Button from "../button/Button";
 import Map from "../map/Map";
 import Instructions from "../instructions/Instructions";
+import Info from "../info/Info";
 
 const MapSection = () => {
     const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
@@ -16,7 +17,10 @@ const MapSection = () => {
                     setIsAddingWaypoint={setIsAddingWaypoint}
                     radius={radius}
                 />
-                <Instructions />
+                <div className="flex gap-4 flex-col w-full max-w-[400px]">
+                    <Instructions />
+                    <Info />
+                </div>
                 {isAddingWaypoint && (
                     <p className="text-center text-white mb-4 animate-pulse">
                         Click on the map to add a waypoint ✨
