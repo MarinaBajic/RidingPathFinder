@@ -160,7 +160,7 @@ const Map = ({ isAddingWaypoint, setIsAddingWaypoint, radius }: MapProps) => {
 		<div
 			id='map'
 			ref={mapContainer}
-			className="h-[70dvh] w-full shadow-lg rounded-xl mx-auto"
+			className="h-[70dvh] w-full shadow-lg rounded-sm mx-auto"
 		/>
 	);
 };
