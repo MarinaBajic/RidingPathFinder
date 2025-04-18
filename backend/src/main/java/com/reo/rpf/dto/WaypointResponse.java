@@ -1,6 +1,7 @@
 package com.reo.rpf.dto;
 
-public record WaypointDto(
+public record WaypointResponse(
+        Integer id,
         String name,
         String description,
         Double latitude,

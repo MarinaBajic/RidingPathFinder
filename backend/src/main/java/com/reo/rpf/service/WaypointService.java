@@ -2,7 +2,8 @@ package com.reo.rpf.service;
 
 import com.reo.rpf.dto.GeoJson;
 import com.reo.rpf.dto.GeoJsonFeature;
-import com.reo.rpf.dto.WaypointDto;
+import com.reo.rpf.dto.WaypointRequest;
+import com.reo.rpf.dto.WaypointResponse;
 import com.reo.rpf.model.Waypoint;
 import com.reo.rpf.repository.WaypointRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,25 +52,25 @@ public class WaypointService {
         return true;
     }
 
-    public WaypointDto getEntity(Integer id) {
+    public WaypointResponse getEntity(Integer id) {
         Optional<Waypoint> waypointOptional = waypointRepository.findById(id);
         if (waypointOptional.isEmpty()) {
             return null;
         }
         Waypoint waypoint = waypointOptional.get();
-        return new WaypointDto(waypoint.getName(), waypoint.getDescription(), waypoint.getLocation().getX(), waypoint.getLocation().getY());
+        return new WaypointResponse(waypoint.getId(), waypoint.getName(), waypoint.getDescription(), waypoint.getLocation().getX(), waypoint.getLocation().getY());
     }
 
-    public WaypointDto create(WaypointDto waypointDto) {
-        Point location = new GeometryFactory().createPoint(new Coordinate(waypointDto.latitude(), waypointDto.longitude()));
+    public WaypointResponse create(WaypointRequest waypointRequest) {
+        Point location = new GeometryFactory().createPoint(new Coordinate(waypointRequest.latitude(), waypointRequest.longitude()));
 
         Waypoint waypoint = new Waypoint();
-        waypoint.setName(waypointDto.name());
-        waypoint.setDescription(waypointDto.description());
+        waypoint.setName(waypointRequest.name());
+        waypoint.setDescription(waypointRequest.description());
         waypoint.setLocation(location);
 
         Waypoint saved = waypointRepository.save(waypoint);
-        return new WaypointDto(saved.getName(), saved.getDescription(), saved.getLocation().getX(), saved.getLocation().getY());
+        return new WaypointResponse(saved.getId(), saved.getName(), saved.getDescription(), saved.getLocation().getX(), saved.getLocation().getY());
     }
 
     public GeoJson get() {
