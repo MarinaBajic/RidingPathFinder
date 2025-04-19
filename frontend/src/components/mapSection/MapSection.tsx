@@ -219,7 +219,7 @@ const MapSection = () => {
                         )}
                     </div>
                     {isAddingWaypoint && (
-                        <p className="text-center text-white mb-4 animate-pulse">
+                        <p className="text-center text-white animate-pulse">
                             Click on the map to add a waypoint ✨
                         </p>
                     )}
