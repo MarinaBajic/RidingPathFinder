@@ -18,7 +18,9 @@ const MapSection = () => {
     const roadLayerRef = useRef<L.GeoJSON | null>(null);
     const waypointLayerRef = useRef<L.GeoJSON | null>(null);
     const highlightLayerRef = useRef<L.GeoJSON | null>(null);
+
     const greenMarkerRef = useRef<L.Marker | null>(null);
+    const circleRef = useRef<L.Circle | null>(null);
 
     const { selectedWaypoint, setSelectedWaypoint } = useMapContext();
 
@@ -62,6 +64,7 @@ const MapSection = () => {
             resetMarkers();
             const data = await fetchWaypointInfo(id);
             setSelectedWaypoint(data);
+
             const icon = L.icon({
                 iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png`,
                 shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -70,10 +73,22 @@ const MapSection = () => {
                 popupAnchor: [1, -34],
                 shadowSize: [41, 41]
             });
+
             greenMarkerRef.current = L.marker([data.latitude, data.longitude], {
                 icon,
                 zIndexOffset: 1
             }).addTo(mapRef.current!);
+
+            circleRef.current = L.circle([data.latitude, data.longitude], {
+                radius,
+                color: 'green',
+                fillColor: 'green',
+                fillOpacity: 0.2,
+                weight: 1
+            }).addTo(mapRef.current!);
+
+            mapRef.current?.setView([data.latitude, data.longitude], 14.2);
+
             highlightNearbyWaypoints(id);
         }
         catch (error) {
@@ -96,6 +111,9 @@ const MapSection = () => {
 
     const resetMarkers = () => {
         greenMarkerRef.current?.remove();
+        greenMarkerRef.current = null;
+        circleRef.current?.remove();
+        circleRef.current = null;
         highlightLayerRef.current?.clearLayers();
     }
 
