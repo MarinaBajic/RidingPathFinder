@@ -13,7 +13,7 @@ const Button = ({ href, children, onClick, hierarchy = 'primary' }: ButtonProps)
     return (
         <ButtonComponent
             {...(href ? { href } : { onClick })}
-            className={`inline-block font-medium rounded-sm py-2 px-4 whitespace-nowrap ${hierarchy}`}
+            className={`inline-block font-medium rounded-sm py-2 px-4 whitespace-nowrap cursor-pointer ${hierarchy}`}
         >
             {children}
         </ButtonComponent>

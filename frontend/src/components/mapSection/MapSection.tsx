@@ -18,6 +18,7 @@ const MapSection = () => {
     const roadLayerRef = useRef<L.GeoJSON | null>(null);
     const waypointLayerRef = useRef<L.GeoJSON | null>(null);
     const highlightLayerRef = useRef<L.GeoJSON | null>(null);
+    const greenMarkerRef = useRef<L.Marker | null>(null);
 
     const { selectedWaypoint, setSelectedWaypoint } = useMapContext();
 
@@ -60,7 +61,21 @@ const MapSection = () => {
         try {
             const data = await fetchWaypointInfo(id);
             setSelectedWaypoint(data);
-            openWaypointPopup(layer, data.name);
+            const icon = L.icon({
+                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png`,
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+            if (greenMarkerRef.current) {
+                greenMarkerRef.current.remove();
+            }
+            greenMarkerRef.current = L.marker([data.latitude, data.longitude], {
+                icon,
+                zIndexOffset: 1
+            }).addTo(mapRef.current!);
             highlightNearbyWaypoints(id);
         }
         catch (error) {
@@ -82,10 +97,16 @@ const MapSection = () => {
     };
 
     const handleMapClick = (e: L.LeafletMouseEvent) => {
-        if (!mapRef.current || !isAddingWaypoint) return;
+        if (!mapRef.current) return;
 
-        const { lat, lng } = e.latlng;
-        openSaveWaypointPopup(lat, lng);
+        if (isAddingWaypoint) {
+            const { lat, lng } = e.latlng;
+            openSaveWaypointPopup(lat, lng);
+        }
+        else {
+            greenMarkerRef.current?.remove();
+            highlightLayerRef.current?.clearLayers();
+        }
     };
 
     const handleSaveWaypoint = async (
@@ -116,23 +137,10 @@ const MapSection = () => {
             alert("Waypoint deleted!");
             displayWaypoints();
             popup?.remove();
-            // highlightLayerRef.current?.clearLayers();
+            highlightLayerRef.current?.clearLayers();
         } else {
             alert("Failed to delete waypoint.");
         }
-    };
-
-    const openWaypointPopup = (layer: L.Layer, name: string) => {
-        popupRef.current?.remove();
-        popupRef.current = L.popup({ offset: L.point(0, -20) })
-            .setLatLng((layer as L.Marker).getLatLng())
-            .setContent(`
-                <div style="font-family: sans-serif;">
-                    <p style="font-size: 1rem; font-weight: bold; margin: 0;">${name}</p>
-                    <p style="margin: 0 0 16px 0; font-size: 0.875rem; color: #555;">Check panel to the right for details.</p>
-                </div>
-            `)
-            .openOn(mapRef.current!);
     };
 
     const openSaveWaypointPopup = (lat: number, lng: number) => {
@@ -176,11 +184,6 @@ const MapSection = () => {
         map.on('moveend', displayRoads);
         map.on('zoomend', displayRoads);
         map.on("click", handleMapClick);
-        map.on("popupclose", () => {
-            if (highlightLayerRef.current) {
-                highlightLayerRef.current.clearLayers();
-            }
-        });
 
         displayRoads();
         displayWaypoints();
@@ -189,7 +192,6 @@ const MapSection = () => {
             map.off('moveend', displayRoads);
             map.off('zoomend', displayRoads);
             map.off("click", handleMapClick);
-            map.off("popupclose");
         };
     }, [isAddingWaypoint, isMapReady]);
 
@@ -208,9 +210,7 @@ const MapSection = () => {
                         {selectedWaypoint && (
                             <Button
                                 onClick={async () => {
-                                    if (selectedWaypoint.id && popupRef.current && mapRef.current) {
-                                        openDeleteWaypointPopup(selectedWaypoint.id, selectedWaypoint.latitude, selectedWaypoint.longitude);
-                                    }
+                                    openDeleteWaypointPopup(selectedWaypoint.id, selectedWaypoint.latitude, selectedWaypoint.longitude);
                                 }}
                                 hierarchy="secondary"
                             >
