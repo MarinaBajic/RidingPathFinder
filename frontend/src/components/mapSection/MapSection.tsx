@@ -59,6 +59,7 @@ const MapSection = () => {
     const handleWaypointClick = async (layer: L.Layer) => {
         const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
         try {
+            resetMarkers();
             const data = await fetchWaypointInfo(id);
             setSelectedWaypoint(data);
             const icon = L.icon({
@@ -69,9 +70,6 @@ const MapSection = () => {
                 popupAnchor: [1, -34],
                 shadowSize: [41, 41]
             });
-            if (greenMarkerRef.current) {
-                greenMarkerRef.current.remove();
-            }
             greenMarkerRef.current = L.marker([data.latitude, data.longitude], {
                 icon,
                 zIndexOffset: 1
@@ -96,6 +94,11 @@ const MapSection = () => {
         }
     };
 
+    const resetMarkers = () => {
+        greenMarkerRef.current?.remove();
+        highlightLayerRef.current?.clearLayers();
+    }
+
     const handleMapClick = (e: L.LeafletMouseEvent) => {
         if (!mapRef.current) return;
 
@@ -103,10 +106,7 @@ const MapSection = () => {
             const { lat, lng } = e.latlng;
             openSaveWaypointPopup(lat, lng);
         }
-        else {
-            greenMarkerRef.current?.remove();
-            highlightLayerRef.current?.clearLayers();
-        }
+        resetMarkers();
     };
 
     const handleSaveWaypoint = async (
@@ -137,7 +137,7 @@ const MapSection = () => {
             alert("Waypoint deleted!");
             displayWaypoints();
             popup?.remove();
-            highlightLayerRef.current?.clearLayers();
+            resetMarkers();
         } else {
             alert("Failed to delete waypoint.");
         }
@@ -187,6 +187,7 @@ const MapSection = () => {
 
         displayRoads();
         displayWaypoints();
+        resetMarkers();
 
         return () => {
             map.off('moveend', displayRoads);
