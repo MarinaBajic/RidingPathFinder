@@ -2,15 +2,15 @@ import './App.css'
 import Hero from './components/hero/Hero';
 import 'leaflet/dist/leaflet.css';
 import MapSection from './components/mapSection/MapSection';
-import { WaypointProvider } from './context/WaypointContext';
+import { MapProvider } from './context/MapContext';
 
 function App() {
 	return (
 		<div className="content-grid my-16">
 			<Hero />
-			<WaypointProvider>
+			<MapProvider>
 				<MapSection />
-			</WaypointProvider>
+			</MapProvider>
 		</div>
 	);
 }

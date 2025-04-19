@@ -1,55 +1,232 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Button from "../button/Button";
 import Map from "../map/Map";
 import Instructions from "../instructions/Instructions";
-import { useWaypoint } from "../../context/WaypointContext";
+import { useMapContext } from "../../context/MapContext";
+import { deleteWaypoint, fetchNearbyFromWaypoint, fetchWaypointInfo, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
+import { updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
+import L from "leaflet";
+import { fetchRoads } from "../../services/roadService";
 
 const MapSection = () => {
+    const [isMapReady, setIsMapReady] = useState(false);
     const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
-    const [isDeletingWaypoint, setIsDeletingWaypoint] = useState(false);
+    const [radius] = useState<number>(1000);
 
-    const [radius, setRadius] = useState<number>(1000);
-    const { selected } = useWaypoint();
+    const mapRef = useRef<L.Map | null>(null);
+    const popupRef = useRef<L.Popup | null>(null);
+    const roadLayerRef = useRef<L.GeoJSON | null>(null);
+    const waypointLayerRef = useRef<L.GeoJSON | null>(null);
+    const highlightLayerRef = useRef<L.GeoJSON | null>(null);
+
+    const { selectedWaypoint, setSelectedWaypoint } = useMapContext();
+
+    const setupLayerClick = (layerRef: React.RefObject<L.GeoJSON | null>) => {
+        layerRef.current?.eachLayer(layer => {
+            layer.on('click', () => handleWaypointClick(layer));
+        });
+    };
+
+    const displayRoads = async () => {
+        if (!mapRef.current) return;
+        const map = mapRef.current;
+
+        const bounds = map.getBounds();
+        const zoom = map.getZoom();
+
+        try {
+            const data = await fetchRoads(bounds, zoom);
+            updateGeoJsonLayer(roadLayerRef, data, map);
+        } catch (error) {
+            console.error('Error fetching roads:', error);
+        }
+    };
+
+    const displayWaypoints = async () => {
+        if (!mapRef.current) return;
+        const map = mapRef.current;
+
+        try {
+            const data = await fetchWaypoints();
+            updateGeoJsonLayerMarkers(waypointLayerRef, data, map, 'blue');
+            setupLayerClick(waypointLayerRef);
+        } catch (error) {
+            console.error('Error fetching waypoints:', error);
+        }
+    };
+
+    const handleWaypointClick = async (layer: L.Layer) => {
+        const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
+        try {
+            const data = await fetchWaypointInfo(id);
+            setSelectedWaypoint(data);
+            openWaypointPopup(layer, data.name);
+            highlightNearbyWaypoints(id);
+        }
+        catch (error) {
+            console.error('Error fetching waypoint info:', error);
+        }
+    };
+
+    const highlightNearbyWaypoints = async (id: number) => {
+        if (!mapRef.current) return;
+        const map = mapRef.current;
+
+        try {
+            const data = await fetchNearbyFromWaypoint(id, radius);
+            updateGeoJsonLayerMarkers(highlightLayerRef, data, map, 'red');
+            setupLayerClick(highlightLayerRef);
+        } catch (error) {
+            console.error('Error fetching nearby waypoints:', error);
+        }
+    };
+
+    const handleMapClick = (e: L.LeafletMouseEvent) => {
+        if (!mapRef.current || !isAddingWaypoint) return;
+
+        const { lat, lng } = e.latlng;
+        openSaveWaypointPopup(lat, lng);
+    };
+
+    const handleSaveWaypoint = async (
+        lat: number, lng: number, popup?: L.Popup | null
+    ) => {
+        const name = prompt("Enter waypoint name:");
+        if (!name) return;
+
+        const description = prompt("Enter description:");
+        if (!description) return;
+
+        const success = await saveWaypoint(name, description, lat, lng);
+
+        if (success) {
+            alert("Waypoint saved!");
+            displayWaypoints();
+            popup?.remove();
+        } else {
+            alert("Failed to save waypoint.");
+        }
+    };
+
+    const handleDeleteWaypoint = async (
+        id: number, popup?: L.Popup | null,
+    ) => {
+        const success = await deleteWaypoint(id);
+        if (success) {
+            alert("Waypoint deleted!");
+            displayWaypoints();
+            popup?.remove();
+            // highlightLayerRef.current?.clearLayers();
+        } else {
+            alert("Failed to delete waypoint.");
+        }
+    };
+
+    const openWaypointPopup = (layer: L.Layer, name: string) => {
+        popupRef.current?.remove();
+        popupRef.current = L.popup({ offset: L.point(0, -20) })
+            .setLatLng((layer as L.Marker).getLatLng())
+            .setContent(`
+                <div style="font-family: sans-serif;">
+                    <p style="font-size: 1rem; font-weight: bold; margin: 0;">${name}</p>
+                    <p style="margin: 0 0 16px 0; font-size: 0.875rem; color: #555;">Check panel to the right for details.</p>
+                </div>
+            `)
+            .openOn(mapRef.current!);
+    };
+
+    const openSaveWaypointPopup = (lat: number, lng: number) => {
+        const popupContent = document.createElement('div');
+        popupContent.innerHTML = `
+            <div style="font-family: sans-serif;">
+                <p style="font-size: 1rem; font-weight: bold;">Save this location as a waypoint?</p>
+                <button id="save-waypoint" style="padding: 4px 8px; border: 1px solid green; border-radius: 4px; cursor:pointer;">Save</button>
+            </div>
+        `;
+
+        popupContent.querySelector('#save-waypoint')?.addEventListener('click', () => {
+            handleSaveWaypoint(lat, lng, popupRef.current);
+            setIsAddingWaypoint(false);
+        });
+
+        popupRef.current = L.popup().setLatLng([lat, lng]).setContent(popupContent).openOn(mapRef.current!);
+    };
+
+    const openDeleteWaypointPopup = (id: number, lat: number, lng: number) => {
+        const popupContent = document.createElement('div');
+        popupContent.innerHTML = `
+            <div style="font-family: sans-serif;">
+                <p style="font-size: 1rem; font-weight: bold;">Delete this waypoint?</p>
+                <button id="delete-waypoint" style="padding: 4px 8px; border: 1px solid red; border-radius: 4px; cursor:pointer;">Delete</button>
+            </div>
+        `;
+
+        popupContent.querySelector('#delete-waypoint')?.addEventListener('click', () => {
+            handleDeleteWaypoint(id, popupRef.current);
+        });
+
+        popupRef.current = L.popup({ offset: L.point(0, -20) }).setLatLng([lat, lng]).setContent(popupContent).openOn(mapRef.current!);
+    };
+
+
+    useEffect(() => {
+        if (!mapRef.current || !isMapReady) return;
+        const map = mapRef.current;
+
+        map.on('moveend', displayRoads);
+        map.on('zoomend', displayRoads);
+        map.on("click", handleMapClick);
+        map.on("popupclose", () => {
+            if (highlightLayerRef.current) {
+                highlightLayerRef.current.clearLayers();
+            }
+        });
+
+        displayRoads();
+        displayWaypoints();
+
+        return () => {
+            map.off('moveend', displayRoads);
+            map.off('zoomend', displayRoads);
+            map.off("click", handleMapClick);
+            map.off("popupclose");
+        };
+    }, [isAddingWaypoint, isMapReady]);
 
     return (
         <div className="full-width bg-(--color-dark) scroll-mt-32 py-16">
             <h2 className="text-center text-3xl font-bold text-white mb-8">Rides and Trails in Serbia</h2>
             <div className="flex gap-4">
-                <Map
-                    isAddingWaypoint={isAddingWaypoint}
-                    setIsAddingWaypoint={setIsAddingWaypoint}
-                    isDeletingWaypoint={isDeletingWaypoint}
-                    setIsDeletingWaypoint={setIsDeletingWaypoint}
-                    radius={radius}
-                />
+                <Map mapRef={mapRef} onInit={() => setIsMapReady(true)} />
                 <div className="flex gap-4 flex-col w-full max-w-[400px] mx-auto">
                     <Instructions />
-                    {!selected ? (
-                        <div className="h-full rounded-sm shadow-lg bg-white p-4 space-y-4">
-                            <h3 className="text-lg font-bold mb-4">Details</h3>
-                            <p className="text-sm text-gray-500">Click a waypoint to see details ✨</p>
-                        </div>
-                    ) : (
-                        <div className="h-full rounded-sm shadow-lg bg-white p-4 space-y-4">
-                            <h3 className="text-xl font-bold text-gray-800">{selected.name}</h3>
-                            <p className="text-sm text-gray-600">{selected.description}</p>
-                            <button
-                                onClick={() => setIsDeletingWaypoint(prev => !prev)}
-                                className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+                    <div className="h-full rounded-sm shadow-lg bg-white p-4 space-y-4">
+                        <h3 className="text-lg font-bold mb-4">{!selectedWaypoint ? "Details" : selectedWaypoint.name}</h3>
+                        <p className="text-sm text-gray-500">
+                            {!selectedWaypoint ? "Click on a marker to see details ✨" : selectedWaypoint.description}
+                        </p>
+                        {selectedWaypoint && (
+                            <Button
+                                onClick={async () => {
+                                    if (selectedWaypoint.id && popupRef.current && mapRef.current) {
+                                        openDeleteWaypointPopup(selectedWaypoint.id, selectedWaypoint.latitude, selectedWaypoint.longitude);
+                                    }
+                                }}
+                                hierarchy="secondary"
                             >
-                                🗑️ Delete
-                            </button>
-                        </div>
+                                Delete
+                            </Button>
+                        )}
+                    </div>
+                    {isAddingWaypoint && (
+                        <p className="text-center text-white mb-4 animate-pulse">
+                            Click on the map to add a waypoint ✨
+                        </p>
                     )}
+                    <Button onClick={() => setIsAddingWaypoint(prev => !prev)}>
+                        {isAddingWaypoint ? 'Cancel adding Waypoint' : 'Add new Waypoint'}
+                    </Button>
                 </div>
-                {isAddingWaypoint && (
-                    <p className="text-center text-white mb-4 animate-pulse">
-                        Click on the map to add a waypoint ✨
-                    </p>
-                )}
-                <Button onClick={() => setIsAddingWaypoint(prev => !prev)}>
-                    {isAddingWaypoint ? 'Cancel adding Waypoint' : 'Add new Waypoint'}
-                </Button>
             </div>
         </div>
     )
