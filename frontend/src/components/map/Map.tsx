@@ -3,15 +3,18 @@ import L from 'leaflet';
 import { deleteWaypoint, fetchNearbyFromWaypoint, fetchWaypointInfo, fetchWaypoints } from "../../services/waypointService";
 import { fetchRoads } from "../../services/roadService";
 import { updateGeoJsonLayer, updateGeoJsonLayerMarkers } from '../../utils/geoJsonUtils';
-import { handleSaveWaypointPopup } from '../../utils/popupUtils';
+import { handleDeleteWaypointPopup, handleSaveWaypointPopup } from '../../utils/popupUtils';
+import { useWaypoint } from '../../context/WaypointContext';
 
 interface MapProps {
 	isAddingWaypoint: boolean;
 	setIsAddingWaypoint: Dispatch<SetStateAction<boolean>>;
+	isDeletingWaypoint: boolean;
+	setIsDeletingWaypoint: Dispatch<SetStateAction<boolean>>;
 	radius: number;
 }
 
-const Map = ({ isAddingWaypoint, setIsAddingWaypoint, radius }: MapProps) => {
+const Map = ({ isAddingWaypoint, setIsAddingWaypoint, isDeletingWaypoint, setIsDeletingWaypoint, radius }: MapProps) => {
 	const mapContainer = useRef(null);
 	const mapRef = useRef<L.Map | null>(null);
 
@@ -25,6 +28,8 @@ const Map = ({ isAddingWaypoint, setIsAddingWaypoint, radius }: MapProps) => {
 	const [roads, setRoads] = useState([]);
 	const [waypoints, setWaypoints] = useState<L.Marker[]>([]);
 	const [highlightedWaypoints, setHighlightedWaypoints] = useState<L.Marker[]>([]);
+
+	const { selected, setSelected } = useWaypoint();
 
 	const handleFetchRoads = async () => {
 		if (!mapRef.current) return;
@@ -83,31 +88,20 @@ const Map = ({ isAddingWaypoint, setIsAddingWaypoint, radius }: MapProps) => {
 		const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
 		try {
 			const waypointData = await fetchWaypointInfo(id);
+			setSelected(waypointData);
+
 			if (popupRef.current) {
 				popupRef.current.remove();
 			}
-			popupRef.current = L.popup()
+			popupRef.current = L.popup({ offset: L.point(0, -20) })
 				.setLatLng((layer as L.Marker).getLatLng())
-				.setContent(`Name: ${waypointData.name}<br>
-                             Description: ${waypointData.description}<br><br>
-                             <button id="delete-waypoint-btn">🗑️ Delete</button>`)
-				.setLatLng([(layer as L.Marker).getLatLng().lat + 0.0006, (layer as L.Marker).getLatLng().lng])
+				.setContent(`
+					<div style="font-family: sans-serif;">
+    					<p style="font-size: 1rem; font-weight: bold; margin: 0;">${waypointData.name}</p>
+    					<p style="margin: 0 0 16px 0; font-size: 0.875rem; color: #555;">Check panel to the right for details.</p>
+					</div>
+				`)
 				.openOn(mapRef.current!);
-
-			setTimeout(() => {
-				const btn = document.getElementById('delete-waypoint-btn');
-				if (btn) {
-					btn.addEventListener('click', async () => {
-						try {
-							await deleteWaypoint(id);
-							popupRef.current?.remove();
-							await handleFetchWaypoints(); // refresh map
-						} catch (err) {
-							console.error('Error deleting waypoint:', err);
-						}
-					});
-				}
-			}, 0);
 
 			handleFetchNearbyWaypoints(id);
 		}
@@ -155,6 +149,18 @@ const Map = ({ isAddingWaypoint, setIsAddingWaypoint, radius }: MapProps) => {
 			map.off('click', handleMapClick);
 		};
 	}, [isAddingWaypoint]);
+
+	useEffect(() => {
+		if (!mapRef.current) return;
+		const map = mapRef.current;
+
+		if (isDeletingWaypoint) {
+			if (selected?.id !== undefined) {
+				handleDeleteWaypointPopup(selected.id, selected.latitude, selected.longitude, map, popupRef, setIsDeletingWaypoint, handleFetchWaypoints);
+			}
+		}
+
+	}, [isDeletingWaypoint]);
 
 
 	return (

@@ -1,4 +1,4 @@
-import { saveWaypoint } from "../services/waypointService";
+import { deleteWaypoint, saveWaypoint } from "../services/waypointService";
 
 export const handleSaveWaypoint = async (
     lat: number,
@@ -20,5 +20,21 @@ export const handleSaveWaypoint = async (
         popup?.remove();
     } else {
         alert("Failed to save waypoint.");
+    }
+};
+
+export const handleDeleteWaypoint = async (
+    id: number,
+    onSuccess: () => void,
+    popup?: L.Popup | null
+) => {
+    const success = await deleteWaypoint(id);
+
+    if (success) {
+        alert("Waypoint deleted!");
+        onSuccess();
+        popup?.remove();
+    } else {
+        alert("Failed to delete waypoint.");
     }
 };
