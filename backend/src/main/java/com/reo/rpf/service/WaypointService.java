@@ -58,11 +58,11 @@ public class WaypointService {
             return null;
         }
         Waypoint waypoint = waypointOptional.get();
-        return new WaypointResponse(waypoint.getId(), waypoint.getName(), waypoint.getDescription(), waypoint.getLocation().getX(), waypoint.getLocation().getY());
+        return new WaypointResponse(waypoint.getId(), waypoint.getName(), waypoint.getDescription(), waypoint.getLocation().getY(), waypoint.getLocation().getX());
     }
 
     public WaypointResponse create(WaypointRequest waypointRequest) {
-        Point location = new GeometryFactory().createPoint(new Coordinate(waypointRequest.latitude(), waypointRequest.longitude()));
+        Point location = new GeometryFactory().createPoint(new Coordinate(waypointRequest.longitude(), waypointRequest.latitude()));
 
         Waypoint waypoint = new Waypoint();
         waypoint.setName(waypointRequest.name());
@@ -87,8 +87,8 @@ public class WaypointService {
         Map<String, Object> geometry = Map.of(
                 "type", "Point",
                 "coordinates", List.of(
-                        waypoint.getLocation().getY(),
-                        waypoint.getLocation().getX()
+                        waypoint.getLocation().getX(),
+                        waypoint.getLocation().getY()
                 )
         );
 
