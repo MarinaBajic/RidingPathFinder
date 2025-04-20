@@ -30,7 +30,7 @@ const Map = ({ mapRef, onInit }: MapProps) => {
 		<div
 			id='map'
 			ref={mapContainer}
-			className="h-[70dvh] w-full shadow-lg rounded-sm mx-auto"
+			className="h-[90dvh] w-full shadow-lg rounded-sm mx-auto"
 		/>
 	);
 };

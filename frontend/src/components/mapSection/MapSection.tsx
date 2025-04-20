@@ -9,6 +9,7 @@ import L from "leaflet";
 import { fetchRoads } from "../../services/roadService";
 import { Waypoint } from "../../types/Waypoint";
 import { getMarker } from "../../constants/constants";
+import Details from "../details/Details";
 
 const MapSection = () => {
     const [isMapReady, setIsMapReady] = useState(false);
@@ -24,7 +25,7 @@ const MapSection = () => {
     const greenMarkerRef = useRef<L.Marker | null>(null);
     const circleRef = useRef<L.Circle | null>(null);
 
-    const { selectedWaypoint, setSelectedWaypoint } = useMapContext();
+    const { setSelectedWaypoint } = useMapContext();
 
     const setupLayerClick = (layerRef: React.RefObject<L.GeoJSON | null>) => {
         layerRef.current?.eachLayer(layer => {
@@ -215,45 +216,14 @@ const MapSection = () => {
                 <Map mapRef={mapRef} onInit={() => setIsMapReady(true)} />
                 <div className="flex gap-4 flex-col w-full max-w-[400px] mx-auto">
                     <Instructions />
-                    <div className="h-full rounded-sm shadow-lg bg-white p-4 space-y-4">
-                        <h3 className="text-lg font-bold mb-4">{!selectedWaypoint ? "Details" : selectedWaypoint.name}</h3>
-                        <p className="text-sm text-gray-500">
-                            {!selectedWaypoint ? "Click on a marker to see details ✨" : selectedWaypoint.description}
-                        </p>
-                        {selectedWaypoint && (
-                            <div>
-                                <Button
-                                    onClick={async () => {
-                                        openDeleteWaypointPopup(selectedWaypoint.id, selectedWaypoint.latitude, selectedWaypoint.longitude);
-                                    }}
-                                    hierarchy="secondary"
-                                >
-                                    Delete
-                                </Button>
-                                <div className="space-y-2">
-                                    <label htmlFor="radius" className="text-sm font-semibold text-gray-700">
-                                        Radius: {radius}m
-                                    </label>
-                                    <input
-                                        type="range"
-                                        id="radius"
-                                        min={100}
-                                        max={10000}
-                                        step={100}
-                                        value={radius}
-                                        onChange={(e) => {
-                                            const newRadius = Number(e.target.value);
-                                            setRadius(newRadius);
-
-                                            circleRef.current?.setRadius(newRadius);
-                                            highlightNearbyWaypoints(selectedWaypoint.id);
-                                        }}
-                                        className="w-full"
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <Details
+                        circleRef={circleRef}
+                        radius={radius}
+                        interactions={{
+                            setRadius,
+                            openDeleteWaypointPopup,
+                            highlightNearbyWaypoints
+                        }} />
                     {isAddingWaypoint && (
                         <p className="text-center text-white animate-pulse">
                             Click on the map to add a waypoint ✨
