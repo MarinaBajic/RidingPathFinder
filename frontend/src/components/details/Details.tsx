@@ -120,30 +120,31 @@ const Details = ({ circleRef, radius, highlightedWaypoints, endWaypointState, op
                             )}
                         </>
                     )}
-
-                    <Button
-                        onClick={() => {
-                            // Logic to find paths goes here
-                            // TODO
-                            console.log("Finding paths...");
-                        }}
-                        disabled={isFindPathsDisabled}
-                        hierarchy="secondary"
-                    >
-                        Find Paths
-                    </Button>
-                    <Button
-                        onClick={async () => {
-                            interactions.openDeleteWaypointPopup(
-                                selectedWaypoint.id,
-                                selectedWaypoint.latitude,
-                                selectedWaypoint.longitude
-                            );
-                        }}
-                        hierarchy="tertiary"
-                    >
-                        Delete selected Waypoint
-                    </Button>
+                    <div className="flex gap-2 mt-4">
+                        <Button
+                            onClick={() => {
+                                // Logic to find paths goes here
+                                // TODO
+                                console.log("Finding paths...");
+                            }}
+                            disabled={isFindPathsDisabled}
+                            hierarchy="secondary"
+                        >
+                            Find Paths
+                        </Button>
+                        <Button
+                            onClick={async () => {
+                                interactions.openDeleteWaypointPopup(
+                                    selectedWaypoint.id,
+                                    selectedWaypoint.latitude,
+                                    selectedWaypoint.longitude
+                                );
+                            }}
+                            hierarchy="tertiary"
+                        >
+                            Delete selected Waypoint
+                        </Button>
+                    </div>
                 </>
             )}
         </div>
