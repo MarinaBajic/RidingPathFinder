@@ -33,9 +33,13 @@ export const updateGeoJsonLayerMarkers = (
         layerRef.current.addData(data);
     } else {
         layerRef.current = L.geoJSON(data, {
-            pointToLayer: (_feature, latlng) => {
-                return L.marker(latlng, { icon });
+            pointToLayer: (feature, latlng) => {
+                return L.marker(latlng, { icon })
+                    .bindTooltip(feature.properties.name, {
+                        permanent: false,
+                        direction: 'bottom'
+                    });
             }
-        }).addTo(map);
+        }).addTo(map)
     }
 };
