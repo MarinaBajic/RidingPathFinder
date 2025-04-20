@@ -5,9 +5,8 @@ const Instructions = () => {
                 <h3 className="text-lg font-bold mb-4">Instructions</h3>
                 <p>On the map to the left:</p>
                 <ul className="list-disc list-inside mb-4">
-                    <li>Zoom using the controls.</li>
-                    <li>Grab with mouse to move the map.</li>
                     <li>Click on a marker to see details of waypoint.</li>
+                    <li>Adjust the radius to highlight waypoints within that range.</li>
                 </ul>
             </div>
         </div>
