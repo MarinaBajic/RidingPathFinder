@@ -16,6 +16,10 @@ const MapSection = () => {
     const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
     const [radius, setRadius] = useState<number>(1000);
 
+    const [highlightedWaypoints, setHighlightedWaypoints] = useState<GeoJSON.Feature[]>([]);
+    const [endWaypoint, setEndWaypoint] = useState<number | null>(null);
+    const [optionalWaypoints, setOptionalWaypoints] = useState<number[]>([]);
+
     const mapRef = useRef<L.Map | null>(null);
     const popupRef = useRef<L.Popup | null>(null);
     const roadLayerRef = useRef<L.GeoJSON | null>(null);
@@ -65,6 +69,8 @@ const MapSection = () => {
         const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
         try {
             resetMarkers();
+            setEndWaypoint(null);
+            setOptionalWaypoints([]);
             const data: Waypoint = await fetchWaypointInfo(id);
             setSelectedWaypoint(data);
 
@@ -97,6 +103,7 @@ const MapSection = () => {
 
         try {
             const data = await fetchNearbyFromWaypoint(id, radius);
+            setHighlightedWaypoints(data.features);
             updateGeoJsonLayerMarkers(highlightLayerRef, data, map, 'red');
             setupLayerClick(highlightLayerRef);
         } catch (error) {
@@ -120,6 +127,7 @@ const MapSection = () => {
             openSaveWaypointPopup(lat, lng);
         }
         resetMarkers();
+        setSelectedWaypoint(null);
     };
 
     const handleSaveWaypoint = async (
@@ -148,6 +156,7 @@ const MapSection = () => {
         const success = await deleteWaypoint(id);
         if (success) {
             alert("Waypoint deleted!");
+            setSelectedWaypoint(null);
             displayWaypoints();
             popup?.remove();
             resetMarkers();
@@ -219,6 +228,15 @@ const MapSection = () => {
                     <Details
                         circleRef={circleRef}
                         radius={radius}
+                        highlightedWaypoints={highlightedWaypoints}
+                        endWaypointState={{
+                            endWaypoint,
+                            setEndWaypoint
+                        }}
+                        optionalWaypointsState={{
+                            optionalWaypoints,
+                            setOptionalWaypoints
+                        }}
                         interactions={{
                             setRadius,
                             openDeleteWaypointPopup,

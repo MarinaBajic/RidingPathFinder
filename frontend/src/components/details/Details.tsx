@@ -1,9 +1,19 @@
+import React from "react";
 import { useMapContext } from "../../context/MapContext";
 import Button from "../button/Button";
 
 interface DetailsProps {
     circleRef: React.RefObject<L.Circle | null>;
     radius: number;
+    highlightedWaypoints: GeoJSON.Feature[];
+    endWaypointState: {
+        endWaypoint: number | null;
+        setEndWaypoint: (id: number) => void;
+    }
+    optionalWaypointsState: {
+        optionalWaypoints: number[] | null;
+        setOptionalWaypoints: (ids: number[] | ((prev: number[]) => number[])) => void;
+    }
     interactions: {
         setRadius: (radius: number) => void;
         openDeleteWaypointPopup: (
@@ -15,8 +25,22 @@ interface DetailsProps {
     };
 }
 
-const Details = ({ circleRef, radius, interactions }: DetailsProps) => {
+const Details = ({ circleRef, radius, highlightedWaypoints, endWaypointState, optionalWaypointsState, interactions }: DetailsProps) => {
     const { selectedWaypoint } = useMapContext();
+
+    const isFindPathsDisabled = !endWaypointState.endWaypoint;
+
+    const handleWaypointCheckbox = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
+        if (e.target.checked) {
+            optionalWaypointsState.setOptionalWaypoints((prev: number[]) => [...prev, id]);
+        } else {
+            optionalWaypointsState.setOptionalWaypoints((prev: number[]) => prev.filter(wp => wp !== id));
+        }
+    };
+
+    const filteredWaypoints = highlightedWaypoints.filter(
+        (feature) => feature.properties?.id !== endWaypointState.endWaypoint
+    );
 
     return (
         <div className="h-full rounded-sm shadow-lg bg-white p-4 space-y-4">
@@ -53,6 +77,61 @@ const Details = ({ circleRef, radius, interactions }: DetailsProps) => {
                             className="w-full accent-green-700"
                         />
                     </div>
+
+                    {highlightedWaypoints.length > 0 && (
+                        <>
+                            <div className="my-2">
+                                <h4 className="font-semibold">Choose end waypoint 🚩</h4>
+                                {highlightedWaypoints.map((feature) => {
+                                    const { id, name } = feature.properties as { id: number; name: string };
+                                    return (
+                                        <div key={id} className="flex gap-2 items-center">
+                                            <input
+                                                type="radio"
+                                                name="endWaypoint"
+                                                value={id}
+                                                checked={endWaypointState.endWaypoint === id}
+                                                onChange={() => endWaypointState.setEndWaypoint(id)}
+                                            />
+                                            <label>{name}</label>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {endWaypointState.endWaypoint && (
+                                <div className="my-2">
+                                    <h4 className="font-semibold">Optional stops 🛑</h4>
+                                    {filteredWaypoints.map((feature) => {
+                                        const { id, name } = feature.properties as { id: number; name: string };
+                                        return (
+                                            <div key={id} className="flex gap-2 items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    value={id}
+                                                    checked={optionalWaypointsState.optionalWaypoints?.includes(id)}
+                                                    onChange={(e) => handleWaypointCheckbox(e, id)}
+                                                />
+                                                <label>{name}</label>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    <Button
+                        onClick={() => {
+                            // Logic to find paths goes here
+                            // TODO
+                            console.log("Finding paths...");
+                        }}
+                        disabled={isFindPathsDisabled}
+                        hierarchy="secondary"
+                    >
+                        Find Paths
+                    </Button>
                     <Button
                         onClick={async () => {
                             interactions.openDeleteWaypointPopup(
@@ -61,9 +140,9 @@ const Details = ({ circleRef, radius, interactions }: DetailsProps) => {
                                 selectedWaypoint.longitude
                             );
                         }}
-                        hierarchy="secondary"
+                        hierarchy="tertiary"
                     >
-                        Delete
+                        Delete selected Waypoint
                     </Button>
                 </>
             )}

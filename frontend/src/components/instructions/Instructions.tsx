@@ -7,6 +7,8 @@ const Instructions = () => {
                 <ul className="list-disc list-inside mb-4">
                     <li>Click on a marker to see details of waypoint.</li>
                     <li>Adjust the radius to highlight waypoints within that range.</li>
+                    <li>Select end waypoint.</li>
+                    <li>Optionally select waypoints to visit in between.</li>
                 </ul>
             </div>
         </div>
