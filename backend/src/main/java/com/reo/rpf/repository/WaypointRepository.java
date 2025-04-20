@@ -16,6 +16,7 @@ public interface WaypointRepository extends JpaRepository<Waypoint, Integer> {
         (SELECT location FROM waypoint WHERE id = :id)::geography,
         :radius
     )
+    AND w.id != :id
 """, nativeQuery = true)
     List<Waypoint> findNearbyFromWaypoint(@Param("id") Integer id, @Param("radius") double radius);
 
