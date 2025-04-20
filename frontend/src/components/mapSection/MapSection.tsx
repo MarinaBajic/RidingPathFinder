@@ -7,6 +7,7 @@ import { deleteWaypoint, fetchNearbyFromWaypoint, fetchWaypointInfo, fetchWaypoi
 import { updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
 import L from "leaflet";
 import { fetchRoads } from "../../services/roadService";
+import { Waypoint } from "../../types/Waypoint";
 
 const MapSection = () => {
     const [isMapReady, setIsMapReady] = useState(false);
@@ -62,7 +63,7 @@ const MapSection = () => {
         const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
         try {
             resetMarkers();
-            const data = await fetchWaypointInfo(id);
+            const data: Waypoint = await fetchWaypointInfo(id);
             setSelectedWaypoint(data);
 
             const icon = L.icon({
