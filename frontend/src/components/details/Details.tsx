@@ -59,14 +59,14 @@ const Details = ({ circleRef, radius, highlightedWaypoints, endWaypointState, op
                             htmlFor="radius"
                             className="text-sm font-semibold"
                         >
-                            Radius: {radius}m
+                            Radius: {radius/1000}km
                         </label>
                         <input
                             type="range"
                             id="radius"
-                            min={100}
-                            max={10000}
-                            step={100}
+                            min={1000}
+                            max={100000}
+                            step={1000}
                             value={radius}
                             onChange={(e) => {
                                 const newRadius = Number(e.target.value);

@@ -14,7 +14,7 @@ import Details from "../details/Details";
 const MapSection = () => {
     const [isMapReady, setIsMapReady] = useState(false);
     const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
-    const [radius, setRadius] = useState<number>(1000);
+    const [radius, setRadius] = useState<number>(10000);
 
     const [highlightedWaypoints, setHighlightedWaypoints] = useState<GeoJSON.Feature[]>([]);
     const [endWaypoint, setEndWaypoint] = useState<number | null>(null);
@@ -88,7 +88,7 @@ const MapSection = () => {
                 weight: 1
             }).addTo(mapRef.current!);
 
-            mapRef.current?.setView([data.latitude, data.longitude], 14.2);
+            mapRef.current?.setView([data.latitude, data.longitude], 10);
 
             highlightNearbyWaypoints(id);
         }
@@ -197,6 +197,13 @@ const MapSection = () => {
 
         popupRef.current = L.popup({ offset: L.point(0, -20) }).setLatLng([lat, lng]).setContent(popupContent).openOn(mapRef.current!);
     };
+
+
+    useEffect(() => {
+        if (!mapRef.current || !circleRef.current) return;
+        const bounds = circleRef.current.getBounds();
+        mapRef.current.fitBounds(bounds, { padding: [30, 30] });
+    }, [radius]);
 
 
     useEffect(() => {
