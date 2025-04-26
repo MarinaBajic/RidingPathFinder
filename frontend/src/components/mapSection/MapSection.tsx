@@ -6,7 +6,7 @@ import { useMapContext } from "../../context/MapContext";
 import { deleteWaypoint, fetchNearbyFromWaypoint, fetchWaypointInfo, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
 import { updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
 import L from "leaflet";
-import { fetchRoads } from "../../services/roadService";
+import { fetchPath, fetchRoads } from "../../services/roadService";
 import { Waypoint } from "../../types/Waypoint";
 import { getMarker } from "../../constants/constants";
 import Details from "../details/Details";
@@ -17,19 +17,19 @@ const MapSection = () => {
     const [radius, setRadius] = useState<number>(10000);
 
     const [highlightedWaypoints, setHighlightedWaypoints] = useState<GeoJSON.Feature[]>([]);
-    const [endWaypoint, setEndWaypoint] = useState<number | null>(null);
     const [optionalWaypoints, setOptionalWaypoints] = useState<number[]>([]);
 
     const mapRef = useRef<L.Map | null>(null);
     const popupRef = useRef<L.Popup | null>(null);
     const roadLayerRef = useRef<L.GeoJSON | null>(null);
+    const pathLayerRef = useRef<L.GeoJSON | null>(null);
     const waypointLayerRef = useRef<L.GeoJSON | null>(null);
     const highlightLayerRef = useRef<L.GeoJSON | null>(null);
 
     const greenMarkerRef = useRef<L.Marker | null>(null);
     const circleRef = useRef<L.Circle | null>(null);
 
-    const { setSelectedWaypoint } = useMapContext();
+    const { selectedWaypoint, setSelectedWaypoint } = useMapContext();
 
     const setupLayerClick = (layerRef: React.RefObject<L.GeoJSON | null>) => {
         layerRef.current?.eachLayer(layer => {
@@ -46,7 +46,7 @@ const MapSection = () => {
 
         try {
             const data = await fetchRoads(bounds, zoom);
-            updateGeoJsonLayer(roadLayerRef, data, map);
+            updateGeoJsonLayer(roadLayerRef, data, map, 'blue');
         } catch (error) {
             console.error('Error fetching roads:', error);
         }
@@ -65,11 +65,24 @@ const MapSection = () => {
         }
     };
 
+    const displayPath = async (endWaypointId: number) => {
+        if (!mapRef.current) return;
+        const map = mapRef.current;
+
+        try {
+            const data = await fetchPath(selectedWaypoint?.id as number, endWaypointId as number);
+            updateGeoJsonLayer(pathLayerRef, data, map, 'red');
+            // roadLayerRef.current?.clearLayers();
+            console.log('Path data:', data);
+        } catch (error) {
+            console.error('Error fetching roads:', error);
+        }
+    };
+
     const handleWaypointClick = async (layer: L.Layer) => {
         const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
         try {
             resetMarkers();
-            setEndWaypoint(null);
             setOptionalWaypoints([]);
             const data: Waypoint = await fetchWaypointInfo(id);
             setSelectedWaypoint(data);
@@ -236,10 +249,6 @@ const MapSection = () => {
                         circleRef={circleRef}
                         radius={radius}
                         highlightedWaypoints={highlightedWaypoints}
-                        endWaypointState={{
-                            endWaypoint,
-                            setEndWaypoint
-                        }}
                         optionalWaypointsState={{
                             optionalWaypoints,
                             setOptionalWaypoints
@@ -247,7 +256,8 @@ const MapSection = () => {
                         interactions={{
                             setRadius,
                             openDeleteWaypointPopup,
-                            highlightNearbyWaypoints
+                            highlightNearbyWaypoints,
+                            displayPath
                         }} />
                     {isAddingWaypoint && (
                         <p className="text-center text-white animate-pulse">

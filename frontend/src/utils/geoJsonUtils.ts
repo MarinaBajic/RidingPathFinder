@@ -4,13 +4,20 @@ import { getMarker } from '../constants/constants';
 export const updateGeoJsonLayer = (
     layerRef: React.RefObject<L.GeoJSON | null>,
     data: GeoJSON.GeoJsonObject,
-    map: L.Map
+    map: L.Map,
+    color: string
 ) => {
+    const geoJsonOptions: L.GeoJSONOptions = {
+        style: () => ({
+            color: color
+        })
+    };
+
     if (layerRef.current) {
         layerRef.current.clearLayers();
         layerRef.current.addData(data);
     } else {
-        layerRef.current = L.geoJSON(data).addTo(map);
+        layerRef.current = L.geoJSON(data, geoJsonOptions).addTo(map);
     }
 };
 

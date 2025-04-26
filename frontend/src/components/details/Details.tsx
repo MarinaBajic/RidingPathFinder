@@ -1,15 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useMapContext } from "../../context/MapContext";
 import Button from "../button/Button";
+import './Details.scss'
 
 interface DetailsProps {
     circleRef: React.RefObject<L.Circle | null>;
     radius: number;
     highlightedWaypoints: GeoJSON.Feature[];
-    endWaypointState: {
-        endWaypoint: number | null;
-        setEndWaypoint: (id: number) => void;
-    }
     optionalWaypointsState: {
         optionalWaypoints: number[] | null;
         setOptionalWaypoints: (ids: number[] | ((prev: number[]) => number[])) => void;
@@ -22,13 +19,17 @@ interface DetailsProps {
             longitude: number
         ) => void;
         highlightNearbyWaypoints: (id: number) => void;
+        displayPath: (endWaypointId: number) => void;
     };
 }
 
-const Details = ({ circleRef, radius, highlightedWaypoints, endWaypointState, optionalWaypointsState, interactions }: DetailsProps) => {
+const Details = ({ circleRef, radius, highlightedWaypoints, optionalWaypointsState, interactions }: DetailsProps) => {
     const { selectedWaypoint } = useMapContext();
 
-    const isFindPathsDisabled = !endWaypointState.endWaypoint;
+    const [endWaypointId, setEndWaypointId] = useState<number | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const isFindPathsBtnDisabled = !endWaypointId;
 
     const handleWaypointCheckbox = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
         if (e.target.checked) {
@@ -39,8 +40,12 @@ const Details = ({ circleRef, radius, highlightedWaypoints, endWaypointState, op
     };
 
     const filteredWaypoints = highlightedWaypoints.filter(
-        (feature) => feature.properties?.id !== endWaypointState.endWaypoint
+        (feature) => feature.properties?.id !== endWaypointId
     );
+
+    useEffect(() => {
+        setEndWaypointId(null);
+    }, [selectedWaypoint]);
 
     return (
         <div className="h-full rounded-sm shadow-lg bg-white p-4 space-y-4">
@@ -59,7 +64,7 @@ const Details = ({ circleRef, radius, highlightedWaypoints, endWaypointState, op
                             htmlFor="radius"
                             className="text-sm font-semibold"
                         >
-                            Radius: {radius/1000}km
+                            Radius: {radius / 1000}km
                         </label>
                         <input
                             type="range"
@@ -90,8 +95,8 @@ const Details = ({ circleRef, radius, highlightedWaypoints, endWaypointState, op
                                                 type="radio"
                                                 name="endWaypoint"
                                                 value={id}
-                                                checked={endWaypointState.endWaypoint === id}
-                                                onChange={() => endWaypointState.setEndWaypoint(id)}
+                                                checked={endWaypointId === id}
+                                                onChange={() => setEndWaypointId(id)}
                                             />
                                             <label>{name}</label>
                                         </div>
@@ -99,7 +104,7 @@ const Details = ({ circleRef, radius, highlightedWaypoints, endWaypointState, op
                                 })}
                             </div>
 
-                            {endWaypointState.endWaypoint && (
+                            {endWaypointId && (
                                 <div className="my-2">
                                     <h4 className="font-semibold">Optional stops 🛑</h4>
                                     {filteredWaypoints.map((feature) => {
@@ -122,15 +127,22 @@ const Details = ({ circleRef, radius, highlightedWaypoints, endWaypointState, op
                     )}
                     <div className="flex gap-2 mt-4">
                         <Button
-                            onClick={() => {
-                                // Logic to find paths goes here
-                                // TODO
-                                console.log("Finding paths...");
+                            onClick={async () => {
+                                setIsLoading(true);
+                                await interactions.displayPath(endWaypointId as number);
+                                setIsLoading(false);
                             }}
-                            disabled={isFindPathsDisabled}
+                            disabled={isFindPathsBtnDisabled || isLoading}
                             hierarchy="secondary"
                         >
-                            Find Paths
+                            {isLoading ? (
+                                <span className="flex items-center gap-2">
+                                    <span className="spinner"></span>
+                                    Finding...
+                                </span>
+                            ) : (
+                                "Find Paths"
+                            )}
                         </Button>
                         <Button
                             onClick={async () => {
