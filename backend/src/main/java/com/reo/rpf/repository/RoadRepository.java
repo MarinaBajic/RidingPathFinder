@@ -2,6 +2,7 @@ package com.reo.rpf.repository;
 
 import com.reo.rpf.model.Road;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,6 +10,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface RoadRepository extends JpaRepository<Road, Integer> {
+
+    @Query("SELECT r FROM Road r ORDER BY distance(r.geom, :location) ASC")
+    List<Road> findNearestRoad(@Param("location") Point location);
 
     //This query fetches all roads that intersect with a given geometry (:geom). For example, if you pass a bounding box or a specific area as geom, it will return all roads within that area.
     @Query("SELECT r FROM Road r WHERE ST_Intersects(r.geom, :geom) = true")

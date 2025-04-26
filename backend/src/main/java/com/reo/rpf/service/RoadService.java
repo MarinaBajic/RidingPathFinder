@@ -3,7 +3,9 @@ package com.reo.rpf.service;
 import com.reo.rpf.dto.GeoJson;
 import com.reo.rpf.dto.GeoJsonFeature;
 import com.reo.rpf.model.Road;
+import com.reo.rpf.model.Waypoint;
 import com.reo.rpf.repository.RoadRepository;
+import com.reo.rpf.repository.WaypointRepository;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
@@ -13,12 +15,33 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class RoadService {
 
     private final RoadRepository roadRepository;
+    private final WaypointRepository waypointRepository;
+
+    public GeoJson findPathBetweenWaypoints(Integer startWaypointId, Integer endWaypointId) {
+        Waypoint start = waypointRepository.findById(startWaypointId)
+                .orElseThrow(() -> new RuntimeException("Start waypoint not found"));
+        Waypoint end = waypointRepository.findById(endWaypointId)
+                .orElseThrow(() -> new RuntimeException("End waypoint not found"));
+
+        // 1. Find nearest roads
+        Road startRoad = roadRepository.findNearestRoad(start.getLocation()).getFirst();
+        Road endRoad = roadRepository.findNearestRoad(end.getLocation()).getFirst();
+
+        // 2. Simplest path: just return these two roads for now
+        List<GeoJsonFeature> features = Stream.of(startRoad, endRoad)
+                .filter(road -> road.getGeom() != null)
+                .map(this::createGeoJsonFeature)
+                .toList();
+
+        return new GeoJson("FeatureCollection", features);
+    }
 
     public GeoJson get(double minLng, double minLat, double maxLng, double maxLat, int zoom) {
         List<String> roadClasses = getRoadClasses(zoom);

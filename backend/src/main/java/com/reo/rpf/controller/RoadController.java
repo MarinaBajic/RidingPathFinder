@@ -13,6 +13,11 @@ public class RoadController {
 
     private final RoadService roadService;
 
+    @GetMapping("/path")
+    public ResponseEntity<GeoJson> getPath(@RequestParam Integer startId, @RequestParam Integer endId) {
+        return ResponseEntity.ok(roadService.findPathBetweenWaypoints(startId, endId));
+    }
+
     @GetMapping
     public ResponseEntity<GeoJson> get(@RequestParam double minLng,
                                             @RequestParam double minLat,
