@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import Button from "../button/Button";
 import Map from "../map/Map";
 import Instructions from "../instructions/Instructions";
-import { useMapContext } from "../../context/MapContext";
 import { deleteWaypoint, fetchNearbyFromWaypoint, fetchWaypointInfo, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
 import { updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
 import L from "leaflet";
@@ -16,6 +15,7 @@ const MapSection = () => {
     const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
     const [radius, setRadius] = useState<number>(10000);
 
+    const [selectedWaypoint, setSelectedWaypoint] = useState<Waypoint | null>(null);
     const [highlightedWaypoints, setHighlightedWaypoints] = useState<GeoJSON.Feature[]>([]);
 
     const mapRef = useRef<L.Map | null>(null);
@@ -27,8 +27,6 @@ const MapSection = () => {
 
     const greenMarkerRef = useRef<L.Marker | null>(null);
     const circleRef = useRef<L.Circle | null>(null);
-
-    const { selectedWaypoint, setSelectedWaypoint } = useMapContext();
 
     const setupLayerClick = (layerRef: React.RefObject<L.GeoJSON | null>) => {
         layerRef.current?.eachLayer(layer => {
@@ -246,6 +244,7 @@ const MapSection = () => {
                     <Details
                         circleRef={circleRef}
                         radius={radius}
+                        selectedWaypoint={selectedWaypoint}
                         highlightedWaypoints={highlightedWaypoints}
                         interactions={{
                             setRadius,

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useMapContext } from "../../context/MapContext";
 import Button from "../button/Button";
 import './Details.scss'
+import { Waypoint } from "../../types/Waypoint";
 
 interface DetailsProps {
     circleRef: React.RefObject<L.Circle | null>;
     radius: number;
+    selectedWaypoint: Waypoint | null;
     highlightedWaypoints: GeoJSON.Feature[];
     interactions: {
         setRadius: (radius: number) => void;
@@ -19,9 +20,7 @@ interface DetailsProps {
     };
 }
 
-const Details = ({ circleRef, radius, highlightedWaypoints, interactions }: DetailsProps) => {
-    const { selectedWaypoint } = useMapContext();
-
+const Details = ({ circleRef, radius, selectedWaypoint, highlightedWaypoints, interactions }: DetailsProps) => {
     const [endWaypointId, setEndWaypointId] = useState<number | null>(null);
     const [optionalWaypointsIds, setOptionalWaypointsIds] = useState<number[]>([]);
 
