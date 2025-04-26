@@ -17,7 +17,6 @@ const MapSection = () => {
     const [radius, setRadius] = useState<number>(10000);
 
     const [highlightedWaypoints, setHighlightedWaypoints] = useState<GeoJSON.Feature[]>([]);
-    const [optionalWaypoints, setOptionalWaypoints] = useState<number[]>([]);
 
     const mapRef = useRef<L.Map | null>(null);
     const popupRef = useRef<L.Popup | null>(null);
@@ -83,7 +82,6 @@ const MapSection = () => {
         const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
         try {
             resetMarkers();
-            setOptionalWaypoints([]);
             const data: Waypoint = await fetchWaypointInfo(id);
             setSelectedWaypoint(data);
 
@@ -249,10 +247,6 @@ const MapSection = () => {
                         circleRef={circleRef}
                         radius={radius}
                         highlightedWaypoints={highlightedWaypoints}
-                        optionalWaypointsState={{
-                            optionalWaypoints,
-                            setOptionalWaypoints
-                        }}
                         interactions={{
                             setRadius,
                             openDeleteWaypointPopup,

@@ -7,10 +7,6 @@ interface DetailsProps {
     circleRef: React.RefObject<L.Circle | null>;
     radius: number;
     highlightedWaypoints: GeoJSON.Feature[];
-    optionalWaypointsState: {
-        optionalWaypoints: number[] | null;
-        setOptionalWaypoints: (ids: number[] | ((prev: number[]) => number[])) => void;
-    }
     interactions: {
         setRadius: (radius: number) => void;
         openDeleteWaypointPopup: (
@@ -23,19 +19,21 @@ interface DetailsProps {
     };
 }
 
-const Details = ({ circleRef, radius, highlightedWaypoints, optionalWaypointsState, interactions }: DetailsProps) => {
+const Details = ({ circleRef, radius, highlightedWaypoints, interactions }: DetailsProps) => {
     const { selectedWaypoint } = useMapContext();
 
     const [endWaypointId, setEndWaypointId] = useState<number | null>(null);
+    const [optionalWaypointsIds, setOptionalWaypointsIds] = useState<number[]>([]);
+
     const [isLoading, setIsLoading] = useState(false);
 
     const isFindPathsBtnDisabled = !endWaypointId;
 
     const handleWaypointCheckbox = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
         if (e.target.checked) {
-            optionalWaypointsState.setOptionalWaypoints((prev: number[]) => [...prev, id]);
+            setOptionalWaypointsIds((prev: number[]) => [...prev, id]);
         } else {
-            optionalWaypointsState.setOptionalWaypoints((prev: number[]) => prev.filter(wp => wp !== id));
+            setOptionalWaypointsIds((prev: number[]) => prev.filter(wp => wp !== id));
         }
     };
 
@@ -45,6 +43,8 @@ const Details = ({ circleRef, radius, highlightedWaypoints, optionalWaypointsSta
 
     useEffect(() => {
         setEndWaypointId(null);
+        setOptionalWaypointsIds([]);
+
     }, [selectedWaypoint]);
 
     return (
@@ -114,7 +114,7 @@ const Details = ({ circleRef, radius, highlightedWaypoints, optionalWaypointsSta
                                                 <input
                                                     type="checkbox"
                                                     value={id}
-                                                    checked={optionalWaypointsState.optionalWaypoints?.includes(id)}
+                                                    checked={optionalWaypointsIds?.includes(id)}
                                                     onChange={(e) => handleWaypointCheckbox(e, id)}
                                                 />
                                                 <label>{name}</label>
