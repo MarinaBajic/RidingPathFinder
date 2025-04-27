@@ -66,8 +66,10 @@ const MapSection = () => {
         if (!mapRef.current) return;
         const map = mapRef.current;
 
+        const bounds = map.getBounds();
+
         try {
-            const data = await fetchPath(selectedWaypoint?.id as number, endWaypointId as number);
+            const data = await fetchPath(bounds, selectedWaypoint?.id as number, endWaypointId as number);
             updateGeoJsonLayer(pathLayerRef, data, map, 'red');
             // roadLayerRef.current?.clearLayers();
             console.log('Path data:', data);
@@ -97,7 +99,7 @@ const MapSection = () => {
                 weight: 1
             }).addTo(mapRef.current!);
 
-            mapRef.current?.setView([data.latitude, data.longitude], 10);
+            mapRef.current?.setView([data.latitude, data.longitude], 11);
 
             highlightNearbyWaypoints(id);
         }
