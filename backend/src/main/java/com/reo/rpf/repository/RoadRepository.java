@@ -11,8 +11,10 @@ import java.util.List;
 
 public interface RoadRepository extends JpaRepository<Road, Integer> {
 
-    @Query("SELECT r FROM Road r ORDER BY distance(r.geom, :location) ASC")
-    List<Road> findNearestRoad(@Param("location") Point location);
+    @Query("SELECT r FROM Road r WHERE " +
+            "ST_Within(r.geom, ST_MakeEnvelope(:minLng, :minLat, :maxLng, :maxLat, 4326)) " +
+            "ORDER BY distance(r.geom, :location) ASC")
+    List<Road> findNearestRoad(double minLng, double minLat, double maxLng, double maxLat, @Param("location") Point location);
 
     //This query fetches all roads that intersect with a given geometry (:geom). For example, if you pass a bounding box or a specific area as geom, it will return all roads within that area.
     @Query("SELECT r FROM Road r WHERE ST_Intersects(r.geom, :geom) = true")

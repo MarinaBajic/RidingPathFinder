@@ -24,15 +24,15 @@ public class RoadService {
     private final RoadRepository roadRepository;
     private final WaypointRepository waypointRepository;
 
-    public GeoJson findPathBetweenWaypoints(Integer startWaypointId, Integer endWaypointId) {
+    public GeoJson findPathBetweenWaypoints(double minLng, double minLat, double maxLng, double maxLat, Integer startWaypointId, Integer endWaypointId) {
         Waypoint start = waypointRepository.findById(startWaypointId)
                 .orElseThrow(() -> new RuntimeException("Start waypoint not found"));
         Waypoint end = waypointRepository.findById(endWaypointId)
                 .orElseThrow(() -> new RuntimeException("End waypoint not found"));
 
         // 1. Find nearest roads
-        Road startRoad = roadRepository.findNearestRoad(start.getLocation()).getFirst();
-        Road endRoad = roadRepository.findNearestRoad(end.getLocation()).getFirst();
+        Road startRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, start.getLocation()).getFirst();
+        Road endRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, end.getLocation()).getFirst();
 
         // 2. Simplest path: just return these two roads for now
         List<GeoJsonFeature> features = Stream.of(startRoad, endRoad)
