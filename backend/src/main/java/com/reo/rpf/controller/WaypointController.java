@@ -57,7 +57,11 @@ public class WaypointController {
     }
 
     @GetMapping
-    public ResponseEntity<GeoJson> get() {
-        return ResponseEntity.ok(waypointService.get());
+    public ResponseEntity<GeoJson> get(@RequestParam Double minLng,
+                                       @RequestParam Double minLat,
+                                       @RequestParam Double maxLng,
+                                       @RequestParam Double maxLat,
+                                       @RequestParam Integer zoom) {
+        return ResponseEntity.ok(waypointService.get(minLng, minLat, maxLng, maxLat, zoom));
     }
 }

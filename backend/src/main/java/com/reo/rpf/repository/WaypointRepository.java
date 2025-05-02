@@ -12,8 +12,8 @@ public interface WaypointRepository extends JpaRepository<Waypoint, Integer> {
     @Query(value = """
     SELECT * FROM waypoint w
     WHERE ST_DWithin(
-        w.location::geography,
-        (SELECT location FROM waypoint WHERE id = :id)::geography,
+        w.geom::geography,
+        (SELECT geom FROM waypoint WHERE id = :id)::geography,
         :radius
     )
     AND w.id != :id
@@ -23,11 +23,16 @@ public interface WaypointRepository extends JpaRepository<Waypoint, Integer> {
     @Query(value = """
     SELECT * FROM waypoint w
     WHERE ST_DWithin(
-        w.location::geography,
+        w.geom::geography,
         ST_SetSRID(ST_MakePoint(:lat, :lng), 4326)::geography,
         :radius
     )
 """, nativeQuery = true)
-    List<Waypoint> findNearbyFromLocation(@Param("lat") double lat, @Param("lng") double lng, @Param("radius") double radius);
+    List<Waypoint> findNearbyFromLocation(@Param("lat") Double lat, @Param("lng") Double lng, @Param("radius") Double radius);
 
+    @Query("SELECT w FROM Waypoint w WHERE " +
+            "ST_Within(w.geom, ST_MakeEnvelope(:minLng, :minLat, :maxLng, :maxLat, 4326)) " +
+            "AND (:waypointClassFilter IS NULL OR w.fclass IN :waypointClassFilter)")
+    List<Waypoint> findWaypointsInBoundsWithClasses(Double minLng, Double minLat, Double maxLng, Double maxLat,
+                                                    @Param("waypointClassFilter") List<String> waypointClassFilter);
 }
