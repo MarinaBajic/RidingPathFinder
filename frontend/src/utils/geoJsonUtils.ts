@@ -25,32 +25,10 @@ export const updateGeoJsonLayerMarkers = (
     layerRef: React.RefObject<L.GeoJSON | null>,
     data: GeoJSON.GeoJsonObject,
     map: L.Map,
-    markerColor: string
+    markerColor: string = 'blue'
 ) => {
-    const icon = getMarker(markerColor);
+    let icon = getMarker(markerColor);
 
-    if (layerRef.current) {
-        layerRef.current.clearLayers();
-        layerRef.current.addData(data);
-    } else {
-        layerRef.current = L.geoJSON(data, {
-            pointToLayer: (feature, latlng) => {
-                return L.marker(latlng, { icon })
-                    .bindTooltip(feature.properties.name, {
-                        permanent: false,
-                        direction: 'bottom'
-                    });
-            }
-        }).addTo(map)
-    }
-};
-
-export const updateGeoJsonLayerMarkersPoi = (
-    layerRef: React.RefObject<L.GeoJSON | null>,
-    data: GeoJSON.GeoJsonObject,
-    map: L.Map
-) => {
-    let icon: L.Icon;
     if (layerRef.current) {
         layerRef.current.clearLayers();
         layerRef.current.addData(data);
@@ -63,7 +41,7 @@ export const updateGeoJsonLayerMarkersPoi = (
                     icon = getMarker('green');
                 else
                     icon = getMarker('blue');
-                
+
                 return L.marker(latlng, { icon })
                     .bindTooltip(feature.properties.name, {
                         permanent: false,

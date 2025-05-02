@@ -1,7 +1,7 @@
 export interface Waypoint {
     id: number;
     name: string;
-    description: string;
+    fclass: string;
     latitude: number;
     longitude: number;
 }
