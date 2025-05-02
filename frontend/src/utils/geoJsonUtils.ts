@@ -44,3 +44,32 @@ export const updateGeoJsonLayerMarkers = (
         }).addTo(map)
     }
 };
+
+export const updateGeoJsonLayerMarkersPoi = (
+    layerRef: React.RefObject<L.GeoJSON | null>,
+    data: GeoJSON.GeoJsonObject,
+    map: L.Map
+) => {
+    let icon: L.Icon;
+    if (layerRef.current) {
+        layerRef.current.clearLayers();
+        layerRef.current.addData(data);
+    } else {
+        layerRef.current = L.geoJSON(data, {
+            pointToLayer: (feature, latlng) => {
+                if (feature.properties.fclass === 'monument')
+                    icon = getMarker('violet');
+                else if (feature.properties.fclass === 'park' || feature.properties.fclass === 'viewpoint')
+                    icon = getMarker('green');
+                else
+                    icon = getMarker('blue');
+                
+                return L.marker(latlng, { icon })
+                    .bindTooltip(feature.properties.name, {
+                        permanent: false,
+                        direction: 'bottom'
+                    });
+            }
+        }).addTo(map)
+    }
+};

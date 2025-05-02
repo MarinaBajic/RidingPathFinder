@@ -3,12 +3,13 @@ import Button from "../button/Button";
 import Map from "../map/Map";
 import Instructions from "../instructions/Instructions";
 import { deleteWaypoint, fetchNearbyFromWaypoint, fetchWaypointInfo, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
-import { updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
+import { updateGeoJsonLayer, updateGeoJsonLayerMarkers, updateGeoJsonLayerMarkersPoi } from "../../utils/geoJsonUtils";
 import L from "leaflet";
 import { fetchPath, fetchRoads } from "../../services/roadService";
 import { Waypoint } from "../../types/Waypoint";
 import { getMarker } from "../../constants/constants";
 import Details from "../details/Details";
+import { fetchPois } from "../../services/poiService";
 
 const MapSection = () => {
     const [isMapReady, setIsMapReady] = useState(false);
@@ -23,6 +24,7 @@ const MapSection = () => {
     const roadLayerRef = useRef<L.GeoJSON | null>(null);
     const pathLayerRef = useRef<L.GeoJSON | null>(null);
     const waypointLayerRef = useRef<L.GeoJSON | null>(null);
+    const poiLayerRef = useRef<L.GeoJSON | null>(null);
     const highlightLayerRef = useRef<L.GeoJSON | null>(null);
 
     const greenMarkerRef = useRef<L.Marker | null>(null);
@@ -38,12 +40,9 @@ const MapSection = () => {
         if (!mapRef.current) return;
         const map = mapRef.current;
 
-        const bounds = map.getBounds();
-        const zoom = map.getZoom();
-
         try {
-            const data = await fetchRoads(bounds, zoom);
-            updateGeoJsonLayer(roadLayerRef, data, map, 'blue');
+            const data = await fetchRoads(map.getBounds(), map.getZoom());
+            updateGeoJsonLayer(roadLayerRef, data, map, 'grey');
         } catch (error) {
             console.error('Error fetching roads:', error);
         }
@@ -59,6 +58,19 @@ const MapSection = () => {
             setupLayerClick(waypointLayerRef);
         } catch (error) {
             console.error('Error fetching waypoints:', error);
+        }
+    };
+
+    const displayPois = async () => {
+        if (!mapRef.current) return;
+        const map = mapRef.current;
+
+        try {
+            const data = await fetchPois(map.getBounds(), map.getZoom());
+            updateGeoJsonLayerMarkersPoi(poiLayerRef, data, map);
+            // setupLayerClick(waypointLayerRef);
+        } catch (error) {
+            console.error('Error fetching pois:', error);
         }
     };
 
@@ -222,15 +234,18 @@ const MapSection = () => {
         const map = mapRef.current;
 
         map.on('moveend', displayRoads);
+        map.on('moveend', displayPois);
         map.on('zoomend', displayRoads);
         map.on("click", handleMapClick);
 
         displayRoads();
-        displayWaypoints();
+        // displayWaypoints();
+        displayPois();
         resetMarkers();
 
         return () => {
             map.off('moveend', displayRoads);
+            map.off('moveend', displayPois);
             map.off('zoomend', displayRoads);
             map.off("click", handleMapClick);
         };
