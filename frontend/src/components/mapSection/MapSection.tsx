@@ -3,18 +3,19 @@ import Button from "../button/Button";
 import Map from "../map/Map";
 import Instructions from "../instructions/Instructions";
 import { deleteWaypoint, fetchNearbyFromWaypoint, fetchWaypointInfo, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
-import { updateGeoJsonLayer, updateGeoJsonLayerMarkers, updateGeoJsonLayerMarkersPoi } from "../../utils/geoJsonUtils";
+import { updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
 import L from "leaflet";
 import { fetchPath, fetchRoads } from "../../services/roadService";
 import { Waypoint } from "../../types/Waypoint";
 import { getMarker } from "../../constants/constants";
 import Details from "../details/Details";
-import { fetchPois } from "../../services/poiService";
+import Swal from "sweetalert2";
 
 const MapSection = () => {
     const [isMapReady, setIsMapReady] = useState(false);
     const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
-    const [radius, setRadius] = useState<number>(10000);
+    const initialRadius = 5000;
+    const [radius, setRadius] = useState<number>(initialRadius);
 
     const [selectedWaypoint, setSelectedWaypoint] = useState<Waypoint | null>(null);
     const [highlightedWaypoints, setHighlightedWaypoints] = useState<GeoJSON.Feature[]>([]);
@@ -24,10 +25,8 @@ const MapSection = () => {
     const roadLayerRef = useRef<L.GeoJSON | null>(null);
     const pathLayerRef = useRef<L.GeoJSON | null>(null);
     const waypointLayerRef = useRef<L.GeoJSON | null>(null);
-    const poiLayerRef = useRef<L.GeoJSON | null>(null);
-    const highlightLayerRef = useRef<L.GeoJSON | null>(null);
 
-    const greenMarkerRef = useRef<L.Marker | null>(null);
+    const selectedMarkerRef = useRef<L.Marker | null>(null);
     const circleRef = useRef<L.Circle | null>(null);
 
     const setupLayerClick = (layerRef: React.RefObject<L.GeoJSON | null>) => {
@@ -53,24 +52,11 @@ const MapSection = () => {
         const map = mapRef.current;
 
         try {
-            const data = await fetchWaypoints();
-            updateGeoJsonLayerMarkers(waypointLayerRef, data, map, 'blue');
+            const data = await fetchWaypoints(map.getBounds(), map.getZoom());
+            updateGeoJsonLayerMarkers(waypointLayerRef, data, map);
             setupLayerClick(waypointLayerRef);
         } catch (error) {
             console.error('Error fetching waypoints:', error);
-        }
-    };
-
-    const displayPois = async () => {
-        if (!mapRef.current) return;
-        const map = mapRef.current;
-
-        try {
-            const data = await fetchPois(map.getBounds(), map.getZoom());
-            updateGeoJsonLayerMarkersPoi(poiLayerRef, data, map);
-            // setupLayerClick(waypointLayerRef);
-        } catch (error) {
-            console.error('Error fetching pois:', error);
         }
     };
 
@@ -97,21 +83,19 @@ const MapSection = () => {
             const data: Waypoint = await fetchWaypointInfo(id);
             setSelectedWaypoint(data);
 
-            const icon = getMarker('green');
-            greenMarkerRef.current = L.marker([data.latitude, data.longitude], {
+            const icon = getMarker('orange');
+            selectedMarkerRef.current = L.marker([data.latitude, data.longitude], {
                 icon,
                 zIndexOffset: 1
             }).addTo(mapRef.current!);
 
             circleRef.current = L.circle([data.latitude, data.longitude], {
                 radius,
-                color: 'green',
-                fillColor: 'green',
+                color: 'orange',
+                fillColor: 'orange',
                 fillOpacity: 0.2,
                 weight: 1
             }).addTo(mapRef.current!);
-
-            mapRef.current?.setView([data.latitude, data.longitude], 11);
 
             highlightNearbyWaypoints(id);
         }
@@ -121,25 +105,19 @@ const MapSection = () => {
     };
 
     const highlightNearbyWaypoints = async (id: number) => {
-        if (!mapRef.current) return;
-        const map = mapRef.current;
-
         try {
             const data = await fetchNearbyFromWaypoint(id, radius);
             setHighlightedWaypoints(data.features);
-            updateGeoJsonLayerMarkers(highlightLayerRef, data, map, 'red');
-            setupLayerClick(highlightLayerRef);
         } catch (error) {
             console.error('Error fetching nearby waypoints:', error);
         }
     };
 
     const resetMarkers = () => {
-        greenMarkerRef.current?.remove();
-        greenMarkerRef.current = null;
+        selectedMarkerRef.current?.remove();
+        selectedMarkerRef.current = null;
         circleRef.current?.remove();
         circleRef.current = null;
-        highlightLayerRef.current?.clearLayers();
     }
 
     const handleMapClick = (e: L.LeafletMouseEvent) => {
@@ -156,20 +134,36 @@ const MapSection = () => {
     const handleSaveWaypoint = async (
         lat: number, lng: number, popup?: L.Popup | null
     ) => {
-        const name = prompt("Enter waypoint name:");
+        const { value: name } = await Swal.fire({
+            title: 'Enter waypoint name',
+            input: 'text',
+            inputPlaceholder: 'Waypoint name',
+            showCancelButton: true,
+        });
         if (!name) return;
 
-        const description = prompt("Enter description:");
+        const { value: description } = await Swal.fire({
+            title: 'Select description',
+            input: 'select',
+            inputOptions: {
+                'monument': 'Monument 🏛️',
+                'viewpoint': 'Viewpoint 🔭',
+                'park': 'Park 🌳',
+                'drinking_water': 'Drinking Water 💧',
+            },
+            inputPlaceholder: 'Select a description',
+            showCancelButton: true,
+        });
         if (!description) return;
 
         const success = await saveWaypoint(name, description, lat, lng);
 
         if (success) {
-            alert("Waypoint saved!");
+            Swal.fire('Saved!', 'Waypoint saved! ✅', 'success');
             displayWaypoints();
             popup?.remove();
         } else {
-            alert("Failed to save waypoint.");
+            Swal.fire('Oops!', 'Failed to save waypoint. 😢', 'error');
         }
     };
 
@@ -178,13 +172,13 @@ const MapSection = () => {
     ) => {
         const success = await deleteWaypoint(id);
         if (success) {
-            alert("Waypoint deleted!");
+            Swal.fire('Deleted!', 'Waypoint deleted!', 'success');
             setSelectedWaypoint(null);
             displayWaypoints();
             popup?.remove();
             resetMarkers();
         } else {
-            alert("Failed to delete waypoint.");
+            Swal.fire('Oops!', 'Failed to delete waypoint. 😢', 'error');
         }
     };
 
@@ -193,7 +187,7 @@ const MapSection = () => {
         popupContent.innerHTML = `
             <div style="font-family: sans-serif;">
                 <p style="font-size: 1rem; font-weight: bold;">Save this location as a waypoint?</p>
-                <button id="save-waypoint" style="padding: 4px 8px; border: 1px solid green; border-radius: 4px; cursor:pointer;">Save</button>
+                <button id="save-waypoint" style="padding: 4px 8px; color: white; background-color: MediumSeaGreen; border: 1px solid green; border-radius: 4px; cursor:pointer;">Save</button>
             </div>
         `;
 
@@ -205,51 +199,26 @@ const MapSection = () => {
         popupRef.current = L.popup().setLatLng([lat, lng]).setContent(popupContent).openOn(mapRef.current!);
     };
 
-    const openDeleteWaypointPopup = (id: number, lat: number, lng: number) => {
-        const popupContent = document.createElement('div');
-        popupContent.innerHTML = `
-            <div style="font-family: sans-serif;">
-                <p style="font-size: 1rem; font-weight: bold;">Delete this waypoint?</p>
-                <button id="delete-waypoint" style="padding: 4px 8px; border: 1px solid red; border-radius: 4px; cursor:pointer;">Delete</button>
-            </div>
-        `;
-
-        popupContent.querySelector('#delete-waypoint')?.addEventListener('click', () => {
-            handleDeleteWaypoint(id, popupRef.current);
-        });
-
-        popupRef.current = L.popup({ offset: L.point(0, -20) }).setLatLng([lat, lng]).setContent(popupContent).openOn(mapRef.current!);
-    };
-
-
-    useEffect(() => {
-        if (!mapRef.current || !circleRef.current) return;
-        const bounds = circleRef.current.getBounds();
-        mapRef.current.fitBounds(bounds, { padding: [30, 30] });
-    }, [radius]);
-
 
     useEffect(() => {
         if (!mapRef.current || !isMapReady) return;
         const map = mapRef.current;
 
         map.on('moveend', displayRoads);
-        map.on('moveend', displayPois);
-        map.on('zoomend', displayRoads);
+        map.on('moveend', displayWaypoints);
         map.on("click", handleMapClick);
 
         displayRoads();
-        // displayWaypoints();
-        displayPois();
+        displayWaypoints();
         resetMarkers();
 
         return () => {
             map.off('moveend', displayRoads);
-            map.off('moveend', displayPois);
-            map.off('zoomend', displayRoads);
+            map.off('moveend', displayWaypoints);
             map.off("click", handleMapClick);
         };
     }, [isAddingWaypoint, isMapReady]);
+
 
     return (
         <div className="full-width bg-(--color-dark) scroll-mt-32 py-16">
@@ -259,13 +228,14 @@ const MapSection = () => {
                 <div className="flex gap-4 flex-col w-full max-w-[400px] mx-auto">
                     <Instructions />
                     <Details
+                        mapRef={mapRef}
                         circleRef={circleRef}
                         radius={radius}
                         selectedWaypoint={selectedWaypoint}
                         highlightedWaypoints={highlightedWaypoints}
                         interactions={{
                             setRadius,
-                            openDeleteWaypointPopup,
+                            handleDeleteWaypoint,
                             highlightNearbyWaypoints,
                             displayPath
                         }} />

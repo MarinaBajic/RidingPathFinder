@@ -2,25 +2,23 @@ import React, { useEffect, useState } from "react";
 import Button from "../button/Button";
 import './Details.scss'
 import { Waypoint } from "../../types/Waypoint";
+import Swal from "sweetalert2";
 
 interface DetailsProps {
+    mapRef: React.RefObject<L.Map | null>;
     circleRef: React.RefObject<L.Circle | null>;
     radius: number;
     selectedWaypoint: Waypoint | null;
     highlightedWaypoints: GeoJSON.Feature[];
     interactions: {
         setRadius: (radius: number) => void;
-        openDeleteWaypointPopup: (
-            id: number,
-            latitude: number,
-            longitude: number
-        ) => void;
+        handleDeleteWaypoint: (id: number) => void;
         highlightNearbyWaypoints: (id: number) => void;
         displayPath: (endWaypointId: number) => void;
     };
 }
 
-const Details = ({ circleRef, radius, selectedWaypoint, highlightedWaypoints, interactions }: DetailsProps) => {
+const Details = ({ mapRef, circleRef, radius, selectedWaypoint, highlightedWaypoints, interactions }: DetailsProps) => {
     const [endWaypointId, setEndWaypointId] = useState<number | null>(null);
     const [optionalWaypointsIds, setOptionalWaypointsIds] = useState<number[]>([]);
 
@@ -46,15 +44,27 @@ const Details = ({ circleRef, radius, selectedWaypoint, highlightedWaypoints, in
 
     }, [selectedWaypoint]);
 
+    useEffect(() => {
+        if (selectedWaypoint) {
+            interactions.highlightNearbyWaypoints(selectedWaypoint.id);
+            circleRef.current?.setRadius(radius);
+
+        }
+        if (mapRef.current && circleRef.current)
+            mapRef.current.fitBounds(circleRef.current.getBounds());
+    }, [selectedWaypoint, radius]);
+
+
     return (
         <div className="h-full rounded-sm shadow-lg bg-white p-4 space-y-4">
-            <h3 className="text-lg font-bold mb-4">
-                {!selectedWaypoint ? "Details" : selectedWaypoint.name}
+            <h3 className="text-lg font-bold">
+                {!selectedWaypoint ? "Details" : selectedWaypoint.name ?
+                    selectedWaypoint.name : "No name"}
             </h3>
             <p className="text-sm text-gray-500">
                 {!selectedWaypoint
                     ? "Click on a marker to see details ✨"
-                    : selectedWaypoint.description}
+                    : selectedWaypoint.fclass}
             </p>
             {selectedWaypoint && (
                 <>
@@ -69,14 +79,12 @@ const Details = ({ circleRef, radius, selectedWaypoint, highlightedWaypoints, in
                             type="range"
                             id="radius"
                             min={1000}
-                            max={100000}
+                            max={50000}
                             step={1000}
                             value={radius}
                             onChange={(e) => {
                                 const newRadius = Number(e.target.value);
                                 interactions.setRadius(newRadius);
-                                interactions.highlightNearbyWaypoints(selectedWaypoint.id);
-                                circleRef.current?.setRadius(newRadius);
                             }}
                             className="w-full accent-green-700"
                         />
@@ -145,11 +153,24 @@ const Details = ({ circleRef, radius, selectedWaypoint, highlightedWaypoints, in
                         </Button>
                         <Button
                             onClick={async () => {
-                                interactions.openDeleteWaypointPopup(
-                                    selectedWaypoint.id,
-                                    selectedWaypoint.latitude,
-                                    selectedWaypoint.longitude
-                                );
+                                Swal.fire({
+                                    title: "Are you sure?",
+                                    text: `You are about to delete a ${selectedWaypoint.fclass} - ${selectedWaypoint.name}!`,
+                                    icon: "warning",
+                                    showCancelButton: true,
+                                    confirmButtonColor: "#3085d6",
+                                    cancelButtonColor: "#d33",
+                                    confirmButtonText: "Yes, delete it!"
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        interactions.handleDeleteWaypoint(selectedWaypoint.id);
+                                        Swal.fire({
+                                            title: "Deleted!",
+                                            text: "Your file has been deleted.",
+                                            icon: "success"
+                                        });
+                                    }
+                                });
                             }}
                             hierarchy="tertiary"
                         >
