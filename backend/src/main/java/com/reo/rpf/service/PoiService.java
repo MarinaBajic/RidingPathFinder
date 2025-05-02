@@ -3,7 +3,6 @@ package com.reo.rpf.service;
 import com.reo.rpf.dto.GeoJson;
 import com.reo.rpf.dto.GeoJsonFeature;
 import com.reo.rpf.model.Poi;
-import com.reo.rpf.model.Waypoint;
 import com.reo.rpf.repository.PoiRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
