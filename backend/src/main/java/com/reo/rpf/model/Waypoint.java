@@ -11,18 +11,20 @@ import org.locationtech.jts.geom.Point;
 @Table(name = "waypoint")
 public class Waypoint {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "waypoint_id_gen")
-    @SequenceGenerator(name = "waypoint_id_gen", sequenceName = "waypoint_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "name")
+    @Column(name = "code")
+    private Integer code;
+
+    @Column(name = "fclass", length = 28)
+    private String fclass;
+
+    @Column(name = "name", length = 100)
     private String name;
 
-    @Column(name = "description", length = Integer.MAX_VALUE)
-    private String description;
-
-    @Column(name = "location", columnDefinition = "geometry")
-    private Point location;
+    @Column(name = "geom", columnDefinition = "geometry")
+    private Point geom;
 
 }
