@@ -3,28 +3,41 @@ import Button from "../button/Button";
 import './Details.scss'
 import { Waypoint } from "../../types/Waypoint";
 import Swal from "sweetalert2";
+import { fetchNearbyFromWaypoint } from "../../services/waypointService";
 
 interface DetailsProps {
     mapRef: React.RefObject<L.Map | null>;
     circleRef: React.RefObject<L.Circle | null>;
     radius: number;
     selectedWaypoint: Waypoint | null;
-    highlightedWaypoints: GeoJSON.Feature[];
     interactions: {
         setRadius: (radius: number) => void;
         handleDeleteWaypoint: (id: number) => void;
-        highlightNearbyWaypoints: (id: number) => void;
         displayPath: (endWaypointId: number) => void;
     };
 }
 
-const Details = ({ mapRef, circleRef, radius, selectedWaypoint, highlightedWaypoints, interactions }: DetailsProps) => {
+const Details = ({ mapRef, circleRef, radius, selectedWaypoint, interactions }: DetailsProps) => {
+    const [highlightedWaypoints, setHighlightedWaypoints] = useState<GeoJSON.Feature[]>([]);
     const [endWaypointId, setEndWaypointId] = useState<number | null>(null);
     const [optionalWaypointsIds, setOptionalWaypointsIds] = useState<number[]>([]);
 
     const [isLoading, setIsLoading] = useState(false);
 
     const isFindPathsBtnDisabled = !endWaypointId;
+
+    const filteredWaypoints = highlightedWaypoints.filter(
+        (feature) => feature.properties?.id !== endWaypointId
+    );
+
+    const highlightNearbyWaypoints = async (id: number) => {
+        try {
+            const data = await fetchNearbyFromWaypoint(id, radius);
+            setHighlightedWaypoints(data.features);
+        } catch (error) {
+            console.error('Error fetching nearby waypoints:', error);
+        }
+    };
 
     const handleWaypointCheckbox = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
         if (e.target.checked) {
@@ -34,24 +47,18 @@ const Details = ({ mapRef, circleRef, radius, selectedWaypoint, highlightedWaypo
         }
     };
 
-    const filteredWaypoints = highlightedWaypoints.filter(
-        (feature) => feature.properties?.id !== endWaypointId
-    );
 
     useEffect(() => {
         setEndWaypointId(null);
         setOptionalWaypointsIds([]);
 
-    }, [selectedWaypoint]);
-
-    useEffect(() => {
         if (selectedWaypoint) {
-            interactions.highlightNearbyWaypoints(selectedWaypoint.id);
-            circleRef.current?.setRadius(radius);
-
+            highlightNearbyWaypoints(selectedWaypoint.id);
         }
-        if (mapRef.current && circleRef.current)
+        if (mapRef.current && circleRef.current) {
+            circleRef.current.setRadius(radius);
             mapRef.current.fitBounds(circleRef.current.getBounds());
+        }
     }, [selectedWaypoint, radius]);
 
 

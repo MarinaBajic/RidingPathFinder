@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Button from "../button/Button";
 import Map from "../map/Map";
 import Instructions from "../instructions/Instructions";
-import { deleteWaypoint, fetchNearbyFromWaypoint, fetchWaypointInfo, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
+import { deleteWaypoint, fetchWaypointInfo, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
 import { updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
 import L from "leaflet";
 import { fetchPath, fetchRoads } from "../../services/roadService";
@@ -12,20 +12,19 @@ import Details from "../details/Details";
 import Swal from "sweetalert2";
 
 const MapSection = () => {
+    const [selectedWaypoint, setSelectedWaypoint] = useState<Waypoint | null>(null);
+    const [radius, setRadius] = useState<number>(5000);
+
     const [isMapReady, setIsMapReady] = useState(false);
     const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
-    const initialRadius = 5000;
-    const [radius, setRadius] = useState<number>(initialRadius);
-
-    const [selectedWaypoint, setSelectedWaypoint] = useState<Waypoint | null>(null);
-    const [highlightedWaypoints, setHighlightedWaypoints] = useState<GeoJSON.Feature[]>([]);
 
     const mapRef = useRef<L.Map | null>(null);
-    const popupRef = useRef<L.Popup | null>(null);
-    const roadLayerRef = useRef<L.GeoJSON | null>(null);
-    const pathLayerRef = useRef<L.GeoJSON | null>(null);
-    const waypointLayerRef = useRef<L.GeoJSON | null>(null);
 
+    const roadLayerRef = useRef<L.GeoJSON | null>(null);
+    const waypointLayerRef = useRef<L.GeoJSON | null>(null);
+    const pathLayerRef = useRef<L.GeoJSON | null>(null);
+
+    const popupRef = useRef<L.Popup | null>(null);
     const selectedMarkerRef = useRef<L.Marker | null>(null);
     const circleRef = useRef<L.Circle | null>(null);
 
@@ -96,20 +95,9 @@ const MapSection = () => {
                 fillOpacity: 0.2,
                 weight: 1
             }).addTo(mapRef.current!);
-
-            highlightNearbyWaypoints(id);
         }
         catch (error) {
             console.error('Error fetching waypoint info:', error);
-        }
-    };
-
-    const highlightNearbyWaypoints = async (id: number) => {
-        try {
-            const data = await fetchNearbyFromWaypoint(id, radius);
-            setHighlightedWaypoints(data.features);
-        } catch (error) {
-            console.error('Error fetching nearby waypoints:', error);
         }
     };
 
@@ -232,11 +220,11 @@ const MapSection = () => {
                         circleRef={circleRef}
                         radius={radius}
                         selectedWaypoint={selectedWaypoint}
-                        highlightedWaypoints={highlightedWaypoints}
+                        // highlightedWaypoints={highlightedWaypoints}
                         interactions={{
                             setRadius,
                             handleDeleteWaypoint,
-                            highlightNearbyWaypoints,
+                            // highlightNearbyWaypoints,
                             displayPath
                         }} />
                     {isAddingWaypoint && (
