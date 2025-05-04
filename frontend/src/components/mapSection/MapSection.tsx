@@ -220,11 +220,9 @@ const MapSection = () => {
                         circleRef={circleRef}
                         radius={radius}
                         selectedWaypoint={selectedWaypoint}
-                        // highlightedWaypoints={highlightedWaypoints}
                         interactions={{
                             setRadius,
                             handleDeleteWaypoint,
-                            // highlightNearbyWaypoints,
                             displayPath
                         }} />
                     {isAddingWaypoint && (
