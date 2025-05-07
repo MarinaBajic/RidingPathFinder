@@ -4,12 +4,14 @@ import './Details.scss'
 import { Waypoint } from "../../types/Waypoint";
 import Swal from "sweetalert2";
 import { fetchNearbyFromWaypoint } from "../../services/waypointService";
+import { Path } from "../../types/Path";
 
 interface DetailsProps {
     mapRef: React.RefObject<L.Map | null>;
     circleRef: React.RefObject<L.Circle | null>;
     radius: number;
     selectedWaypoint: Waypoint | null;
+    selectedPath: Path | null;
     interactions: {
         setRadius: (radius: number) => void;
         handleDeleteWaypoint: (id: number) => void;
@@ -17,7 +19,7 @@ interface DetailsProps {
     };
 }
 
-const Details = ({ mapRef, circleRef, radius, selectedWaypoint, interactions }: DetailsProps) => {
+const Details = ({ mapRef, circleRef, radius, selectedWaypoint, selectedPath, interactions }: DetailsProps) => {
     const [highlightedWaypoints, setHighlightedWaypoints] = useState<GeoJSON.Feature[]>([]);
     // const [endWaypointId, setEndWaypointId] = useState<number | null>(null);
     // const [optionalWaypointsIds, setOptionalWaypointsIds] = useState<number[]>([]);
@@ -63,13 +65,14 @@ const Details = ({ mapRef, circleRef, radius, selectedWaypoint, interactions }: 
     return (
         <div className="h-full rounded-sm shadow-lg bg-white p-4 space-y-4">
             <h3 className="text-lg font-bold">
-                {!selectedWaypoint ? "Details" : selectedWaypoint.name ?
-                    selectedWaypoint.name : "No name"}
+                {selectedWaypoint ?
+                    selectedWaypoint.name ? selectedWaypoint.name : "No name" :
+                    selectedPath ? selectedPath.name : "Details"}
             </h3>
             <p className="text-sm text-gray-500">
-                {!selectedWaypoint
-                    ? "Click on a marker to see details ✨"
-                    : selectedWaypoint.fclass}
+                {selectedWaypoint ? selectedWaypoint.fclass :
+                    selectedPath ? selectedPath.description :
+                        "Click on a marker or a path to see details ✨"}
             </p>
             {selectedWaypoint && (
                 <>
@@ -117,14 +120,14 @@ const Details = ({ mapRef, circleRef, radius, selectedWaypoint, interactions }: 
                             </div> */}
                             <div className="my-2">
                                 <h4 className="font-semibold">Nearby waypoints:</h4>
-                                {highlightedWaypoints.map((feature) => {
-                                    const { name } = feature.properties as { name: string };
-                                    return (
-                                        <ul className="flex gap-2 items-center">
-                                            <li>- {name}</li>
-                                        </ul>
-                                    );
-                                })}
+                                <ul>
+                                    {highlightedWaypoints.map((feature) => {
+                                        const { id, name } = feature.properties as { id: number, name: string };
+                                        return (
+                                            <li key={id}>- {name}</li>
+                                        );
+                                    })}
+                                </ul>
                             </div>
 
                             {/* {endWaypointId && (

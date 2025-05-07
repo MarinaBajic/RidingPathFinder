@@ -5,11 +5,13 @@ export const updateGeoJsonLayer = (
     layerRef: React.RefObject<L.GeoJSON | null>,
     data: GeoJSON.GeoJsonObject,
     map: L.Map,
-    color: string
+    color: string,
+    weight: number = 2
 ) => {
     const geoJsonOptions: L.GeoJSONOptions = {
         style: () => ({
-            color: color
+            color: color,
+            weight: weight
         })
     };
 
@@ -20,6 +22,15 @@ export const updateGeoJsonLayer = (
         layerRef.current = L.geoJSON(data, geoJsonOptions).addTo(map);
     }
 };
+
+export const removeGeoJsonLayer = (
+    layerRef: React.RefObject<L.GeoJSON | null>
+) => {
+    if (layerRef.current) {
+        layerRef.current.remove();
+        layerRef.current = null;
+    }
+}
 
 export const updateGeoJsonLayerMarkers = (
     layerRef: React.RefObject<L.GeoJSON | null>,

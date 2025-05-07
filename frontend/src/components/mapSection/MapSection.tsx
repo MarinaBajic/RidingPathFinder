@@ -3,21 +3,24 @@ import Button from "../button/Button";
 import Map from "../map/Map";
 import Instructions from "../instructions/Instructions";
 import { deleteWaypoint, fetchWaypointInfo, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
-import { updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
+import { removeGeoJsonLayer, updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
 import L from "leaflet";
 import { fetchRoads } from "../../services/roadService";
 import { Waypoint } from "../../types/Waypoint";
 import { getMarker } from "../../constants/constants";
 import Details from "../details/Details";
 import Swal from "sweetalert2";
-import { fetchPaths } from "../../services/pathService";
+import { fetchPathInfo, fetchPaths } from "../../services/pathService";
+import { Path } from "../../types/Path";
 
 const MapSection = () => {
     const [selectedWaypoint, setSelectedWaypoint] = useState<Waypoint | null>(null);
+    const [selectedPath, setSelectedPath] = useState<Path | null>(null);
     const [radius, setRadius] = useState<number>(5000);
 
     const [isMapReady, setIsMapReady] = useState(false);
     const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
+    const [isDisplayingPaths, setIsDisplayingPaths] = useState(false);
 
     const mapRef = useRef<L.Map | null>(null);
 
@@ -29,9 +32,12 @@ const MapSection = () => {
     const selectedMarkerRef = useRef<L.Marker | null>(null);
     const circleRef = useRef<L.Circle | null>(null);
 
-    const setupLayerClick = (layerRef: React.RefObject<L.GeoJSON | null>) => {
+    const togglePaths = () => setIsDisplayingPaths(prev => !prev)
+    const toggleAddingWaypoint = () => setIsAddingWaypoint(prev => !prev)
+
+    const setupLayerClick = (layerRef: React.RefObject<L.GeoJSON | null>, handleClick: (layer: L.Layer) => Promise<void>) => {
         layerRef.current?.eachLayer(layer => {
-            layer.on('click', () => handleWaypointClick(layer));
+            layer.on('click', () => handleClick(layer));
         });
     };
 
@@ -53,7 +59,8 @@ const MapSection = () => {
 
         try {
             const data = await fetchPaths();
-            updateGeoJsonLayer(pathLayerRef, data, map, 'red');
+            updateGeoJsonLayer(pathLayerRef, data, map, 'red', 6);
+            setupLayerClick(pathLayerRef, handlePathClick);
         } catch (error) {
             console.error('Error fetching roads:', error);
         }
@@ -66,7 +73,7 @@ const MapSection = () => {
         try {
             const data = await fetchWaypoints(map.getBounds(), map.getZoom());
             updateGeoJsonLayerMarkers(waypointLayerRef, data, map);
-            setupLayerClick(waypointLayerRef);
+            setupLayerClick(waypointLayerRef, handleWaypointClick);
         } catch (error) {
             console.error('Error fetching waypoints:', error);
         }
@@ -86,6 +93,17 @@ const MapSection = () => {
     //         console.error('Error fetching roads:', error);
     //     }
     // };
+
+    const handlePathClick = async (layer: L.Layer) => {
+        const id = (layer as L.Layer & { feature: { properties: { pathId: number } } }).feature.properties.pathId;
+        try {
+            const data: Path = await fetchPathInfo(id);
+            setSelectedPath(data);
+        }
+        catch (error) {
+            console.error('Error fetching path info:', error);
+        }
+    };
 
     const handleWaypointClick = async (layer: L.Layer) => {
         const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
@@ -129,6 +147,7 @@ const MapSection = () => {
         }
         resetMarkers();
         setSelectedWaypoint(null);
+        setSelectedPath(null);
     };
 
     const handleSaveWaypoint = async (
@@ -204,13 +223,20 @@ const MapSection = () => {
         if (!mapRef.current || !isMapReady) return;
         const map = mapRef.current;
 
-        map.on('moveend', displayRoads);
         map.on('moveend', displayWaypoints);
         map.on("click", handleMapClick);
 
-        displayRoads();
+        if (isDisplayingPaths) {
+            removeGeoJsonLayer(roadLayerRef);
+            displayPaths();
+        }
+        else {
+            map.on('moveend', displayRoads)
+            removeGeoJsonLayer(pathLayerRef);
+            displayRoads()
+        };
+
         displayWaypoints();
-        displayPaths();
         resetMarkers();
 
         return () => {
@@ -218,7 +244,7 @@ const MapSection = () => {
             map.off('moveend', displayWaypoints);
             map.off("click", handleMapClick);
         };
-    }, [isAddingWaypoint, isMapReady]);
+    }, [isDisplayingPaths, isAddingWaypoint, isMapReady]);
 
 
     return (
@@ -233,6 +259,7 @@ const MapSection = () => {
                         circleRef={circleRef}
                         radius={radius}
                         selectedWaypoint={selectedWaypoint}
+                        selectedPath={selectedPath}
                         interactions={{
                             setRadius,
                             handleDeleteWaypoint,
@@ -243,12 +270,17 @@ const MapSection = () => {
                             Click on the map to add a waypoint ✨
                         </p>
                     )}
-                    <Button onClick={() => setIsAddingWaypoint(prev => !prev)}>
-                        {isAddingWaypoint ? 'Cancel adding Waypoint' : 'Add new Waypoint'}
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button onClick={togglePaths} >
+                            {isDisplayingPaths ? 'Remove all paths' : 'Show all paths'}
+                        </Button>
+                        <Button onClick={toggleAddingWaypoint} hierarchy="secondary">
+                            {isAddingWaypoint ? 'Cancel adding Waypoint' : 'Add new Waypoint'}
+                        </Button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
 
