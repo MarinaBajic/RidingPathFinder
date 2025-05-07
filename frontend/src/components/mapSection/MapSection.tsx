@@ -5,11 +5,12 @@ import Instructions from "../instructions/Instructions";
 import { deleteWaypoint, fetchWaypointInfo, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
 import { updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
 import L from "leaflet";
-import { fetchPath, fetchRoads } from "../../services/roadService";
+import { fetchRoads } from "../../services/roadService";
 import { Waypoint } from "../../types/Waypoint";
 import { getMarker } from "../../constants/constants";
 import Details from "../details/Details";
 import Swal from "sweetalert2";
+import { fetchPaths } from "../../services/pathService";
 
 const MapSection = () => {
     const [selectedWaypoint, setSelectedWaypoint] = useState<Waypoint | null>(null);
@@ -46,6 +47,18 @@ const MapSection = () => {
         }
     };
 
+    const displayPaths = async () => {
+        if (!mapRef.current) return;
+        const map = mapRef.current;
+
+        try {
+            const data = await fetchPaths();
+            updateGeoJsonLayer(pathLayerRef, data, map, 'red');
+        } catch (error) {
+            console.error('Error fetching roads:', error);
+        }
+    };
+
     const displayWaypoints = async () => {
         if (!mapRef.current) return;
         const map = mapRef.current;
@@ -59,21 +72,20 @@ const MapSection = () => {
         }
     };
 
-    const displayPath = async (endWaypointId: number) => {
-        if (!mapRef.current) return;
-        const map = mapRef.current;
+    // const displayPath = async (endWaypointId: number) => {
+    //     if (!mapRef.current) return;
+    //     const map = mapRef.current;
 
-        const bounds = map.getBounds();
+    //     const bounds = map.getBounds();
 
-        try {
-            const data = await fetchPath(bounds, selectedWaypoint?.id as number, endWaypointId as number);
-            updateGeoJsonLayer(pathLayerRef, data, map, 'red');
-            // roadLayerRef.current?.clearLayers();
-            console.log('Path data:', data);
-        } catch (error) {
-            console.error('Error fetching roads:', error);
-        }
-    };
+    //     try {
+    //         const data = await fetchPath(bounds, selectedWaypoint?.id as number, endWaypointId as number);
+    //         updateGeoJsonLayer(pathLayerRef, data, map, 'red');
+    //         console.log('Path data:', data);
+    //     } catch (error) {
+    //         console.error('Error fetching roads:', error);
+    //     }
+    // };
 
     const handleWaypointClick = async (layer: L.Layer) => {
         const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
@@ -198,6 +210,7 @@ const MapSection = () => {
 
         displayRoads();
         displayWaypoints();
+        displayPaths();
         resetMarkers();
 
         return () => {
@@ -223,7 +236,7 @@ const MapSection = () => {
                         interactions={{
                             setRadius,
                             handleDeleteWaypoint,
-                            displayPath
+                            // displayPath
                         }} />
                     {isAddingWaypoint && (
                         <p className="text-center text-white animate-pulse">

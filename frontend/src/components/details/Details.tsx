@@ -13,7 +13,7 @@ interface DetailsProps {
     interactions: {
         setRadius: (radius: number) => void;
         handleDeleteWaypoint: (id: number) => void;
-        displayPath: (endWaypointId: number) => void;
+        // displayPath: (endWaypointId: number) => void;
     };
 }
 
@@ -22,9 +22,8 @@ const Details = ({ mapRef, circleRef, radius, selectedWaypoint, interactions }: 
     const [endWaypointId, setEndWaypointId] = useState<number | null>(null);
     const [optionalWaypointsIds, setOptionalWaypointsIds] = useState<number[]>([]);
 
-    const [isLoading, setIsLoading] = useState(false);
-
-    const isFindPathsBtnDisabled = !endWaypointId;
+    // const [isLoading, setIsLoading] = useState(false);
+    // const isFindPathsBtnDisabled = !endWaypointId;
 
     const filteredWaypoints = highlightedWaypoints.filter(
         (feature) => feature.properties?.id !== endWaypointId
@@ -142,21 +141,22 @@ const Details = ({ mapRef, circleRef, radius, selectedWaypoint, interactions }: 
                     <div className="flex gap-2 mt-4">
                         <Button
                             onClick={async () => {
-                                setIsLoading(true);
-                                await interactions.displayPath(endWaypointId as number);
-                                setIsLoading(false);
+                                // setIsLoading(true);
+                                // await interactions.displayPath(endWaypointId as number);
+                                // setIsLoading(false);
                             }}
-                            disabled={isFindPathsBtnDisabled || isLoading}
+                            // disabled={isFindPathsBtnDisabled || isLoading}
                             hierarchy="secondary"
                         >
-                            {isLoading ? (
+                            {/* {isLoading ? (
                                 <span className="flex items-center gap-2">
                                     <span className="spinner"></span>
                                     Finding...
                                 </span>
                             ) : (
                                 "Find Paths"
-                            )}
+                            )} */}
+                            Find Paths
                         </Button>
                         <Button
                             onClick={async () => {
