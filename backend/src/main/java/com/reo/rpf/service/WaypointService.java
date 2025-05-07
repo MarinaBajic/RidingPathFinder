@@ -12,6 +12,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,7 +59,7 @@ public class WaypointService {
             return null;
         }
         Waypoint waypoint = waypointOptional.get();
-        return new WaypointResponse(waypoint.getId(), waypoint.getName(), waypoint.getDescription(), waypoint.getLocation().getY(), waypoint.getLocation().getX());
+        return new WaypointResponse(waypoint.getId(), waypoint.getName(), waypoint.getFclass(), waypoint.getGeom().getY(), waypoint.getGeom().getX());
     }
 
     public WaypointResponse create(WaypointRequest waypointRequest) {
@@ -66,15 +67,16 @@ public class WaypointService {
 
         Waypoint waypoint = new Waypoint();
         waypoint.setName(waypointRequest.name());
-        waypoint.setDescription(waypointRequest.description());
-        waypoint.setLocation(location);
+        waypoint.setFclass(waypointRequest.fclass());
+        waypoint.setGeom(location);
 
         Waypoint saved = waypointRepository.save(waypoint);
-        return new WaypointResponse(saved.getId(), saved.getName(), saved.getDescription(), saved.getLocation().getX(), saved.getLocation().getY());
+        return new WaypointResponse(saved.getId(), saved.getName(), saved.getFclass(), saved.getGeom().getX(), saved.getGeom().getY());
     }
 
-    public GeoJson get() {
-        List<Waypoint> waypoints = waypointRepository.findAll();
+    public GeoJson get(Double minLng, Double minLat, Double maxLng, Double maxLat, Integer zoom) {
+        List<String> waypointClasses = getWaypointClasses(zoom);
+        List<Waypoint> waypoints = waypointRepository.findWaypointsInBoundsWithClasses(minLng, minLat, maxLng, maxLat, waypointClasses);
 
         List<GeoJsonFeature> features = waypoints.stream()
                 .map(this::createGeoJsonFeature)
@@ -83,19 +85,34 @@ public class WaypointService {
         return new GeoJson("FeatureCollection", features);
     }
 
+    private List<String> getWaypointClasses(Integer zoom) {
+        List<String> waypointClasses = new ArrayList<>();
+        if (zoom > 6) {
+            waypointClasses.add("monument");
+        }
+        if (zoom > 8) {
+            waypointClasses.add("viewpoint");
+            waypointClasses.add("park");
+        }
+        if (zoom > 12) {
+            waypointClasses.add("drinking_water");
+        }
+        return waypointClasses;
+    }
+
     private GeoJsonFeature createGeoJsonFeature(Waypoint waypoint) {
         Map<String, Object> geometry = Map.of(
                 "type", "Point",
                 "coordinates", List.of(
-                        waypoint.getLocation().getX(),
-                        waypoint.getLocation().getY()
+                        waypoint.getGeom().getX(),
+                        waypoint.getGeom().getY()
                 )
         );
 
         Map<String, Object> properties = Map.of(
                 "id", waypoint.getId(),
-                "name", waypoint.getName(),
-                "description", waypoint.getDescription()
+                "name", waypoint.getName() != null ? waypoint.getName() : waypoint.getFclass(),
+                "fclass", waypoint.getFclass()
         );
 
         return new GeoJsonFeature("Feature", geometry, properties);
