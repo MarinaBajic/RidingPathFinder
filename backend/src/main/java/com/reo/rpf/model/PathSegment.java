@@ -9,13 +9,18 @@ import org.locationtech.jts.geom.MultiLineString;
 @Getter
 @Setter
 @Entity
-@Table(name = "road")
-public class Road {
+@Table(name = "path_segment")
+public class PathSegment {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "road_id_gen")
-    @SequenceGenerator(name = "road_id_gen", sequenceName = "road_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
+
+    @Column(name = "code")
+    private Integer code;
+
+    @Column(name = "fclass", length = 28)
+    private String fclass;
 
     @Column(name = "name", length = 100)
     private String name;
@@ -23,16 +28,14 @@ public class Road {
     @Column(name = "maxspeed")
     private Integer maxspeed;
 
-    @Column(name = "fclass")
-    private String fclass;
+    @Column(name = "road_id")
+    private Integer roadId;
+
+    @Column(name = "path_id")
+    private Integer pathId;
 
     @JsonIgnore
     @Column(name = "geom", columnDefinition = "geometry")
     private MultiLineString geom;
 
-//    @Column(name = "source")
-//    private Integer source;
-//
-//    @Column(name = "target")
-//    private Integer target;
 }

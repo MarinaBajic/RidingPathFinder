@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -30,12 +29,13 @@ public class RoadService {
         Waypoint end = waypointRepository.findById(endWaypointId)
                 .orElseThrow(() -> new RuntimeException("End waypoint not found"));
 
-        // 1. Find nearest roads
-        Road startRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, start.getLocation()).getFirst();
-        Road endRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, end.getLocation()).getFirst();
+        Road startRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, start.getGeom()).getFirst();
+        Road endRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, end.getGeom()).getFirst();
 
-        // 2. Simplest path: just return these two roads for now
-        List<GeoJsonFeature> features = Stream.of(startRoad, endRoad)
+//        List<Road> roads = roadRepository.findPathBetweenNodes(startRoad.getTarget(), endRoad.getSource());
+        List<Road> roads = List.of(startRoad, endRoad);
+
+        List<GeoJsonFeature> features = roads.stream()
                 .filter(road -> road.getGeom() != null)
                 .map(this::createGeoJsonFeature)
                 .toList();
@@ -43,7 +43,7 @@ public class RoadService {
         return new GeoJson("FeatureCollection", features);
     }
 
-    public GeoJson get(double minLng, double minLat, double maxLng, double maxLat, int zoom) {
+    public GeoJson get(Double minLng, Double minLat, Double maxLng, Double maxLat, Integer zoom) {
         List<String> roadClasses = getRoadClasses(zoom);
         List<Road> roads = roadRepository.findRoadsInBoundsWithClasses(minLng, minLat, maxLng, maxLat, roadClasses);
 
@@ -100,11 +100,14 @@ public class RoadService {
     }
 
     private GeoJsonFeature createGeoJsonFeature(Road road) {
-        MultiLineString multiLineString = road.getGeom();
+        return getGeoJsonFeature(road.getGeom(), road.getName());
+    }
+
+    static GeoJsonFeature getGeoJsonFeature(MultiLineString geom, String name) {
         List<List<List<Double>>> coordinates = new ArrayList<>();
 
-        for (int i = 0; i < multiLineString.getNumGeometries(); i++) {
-            LineString lineString = (LineString) multiLineString.getGeometryN(i);
+        for (int i = 0; i < geom.getNumGeometries(); i++) {
+            LineString lineString = (LineString) geom.getGeometryN(i);
             List<List<Double>> lineCoordinates = Arrays.stream(lineString.getCoordinates())
                     .map(coordinate -> List.of(coordinate.x, coordinate.y))
                     .toList();
@@ -118,7 +121,7 @@ public class RoadService {
         );
 
         Map<String, Object> properties = Map.of(
-                "name", road.getName() != null ? road.getName() : "Unknown Road"
+                "name", name != null ? name : "Unknown Road"
         );
 
         return new GeoJsonFeature("Feature", geometry, properties);
