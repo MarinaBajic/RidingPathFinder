@@ -19,15 +19,14 @@ interface DetailsProps {
 
 const Details = ({ mapRef, circleRef, radius, selectedWaypoint, interactions }: DetailsProps) => {
     const [highlightedWaypoints, setHighlightedWaypoints] = useState<GeoJSON.Feature[]>([]);
-    const [endWaypointId, setEndWaypointId] = useState<number | null>(null);
-    const [optionalWaypointsIds, setOptionalWaypointsIds] = useState<number[]>([]);
+    // const [endWaypointId, setEndWaypointId] = useState<number | null>(null);
+    // const [optionalWaypointsIds, setOptionalWaypointsIds] = useState<number[]>([]);
 
     // const [isLoading, setIsLoading] = useState(false);
     // const isFindPathsBtnDisabled = !endWaypointId;
-
-    const filteredWaypoints = highlightedWaypoints.filter(
-        (feature) => feature.properties?.id !== endWaypointId
-    );
+    // const filteredWaypoints = highlightedWaypoints.filter(
+    //     (feature) => feature.properties?.id !== endWaypointId
+    // );
 
     const highlightNearbyWaypoints = async (id: number) => {
         try {
@@ -38,18 +37,18 @@ const Details = ({ mapRef, circleRef, radius, selectedWaypoint, interactions }: 
         }
     };
 
-    const handleWaypointCheckbox = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
-        if (e.target.checked) {
-            setOptionalWaypointsIds((prev: number[]) => [...prev, id]);
-        } else {
-            setOptionalWaypointsIds((prev: number[]) => prev.filter(wp => wp !== id));
-        }
-    };
+    // const handleWaypointCheckbox = (e: React.ChangeEvent<HTMLInputElement>, id: number) => {
+    //     if (e.target.checked) {
+    //         setOptionalWaypointsIds((prev: number[]) => [...prev, id]);
+    //     } else {
+    //         setOptionalWaypointsIds((prev: number[]) => prev.filter(wp => wp !== id));
+    //     }
+    // };
 
 
     useEffect(() => {
-        setEndWaypointId(null);
-        setOptionalWaypointsIds([]);
+        // setEndWaypointId(null);
+        // setOptionalWaypointsIds([]);
 
         if (selectedWaypoint) {
             highlightNearbyWaypoints(selectedWaypoint.id);
@@ -98,7 +97,7 @@ const Details = ({ mapRef, circleRef, radius, selectedWaypoint, interactions }: 
 
                     {highlightedWaypoints.length > 0 && (
                         <>
-                            <div className="my-2">
+                            {/* <div className="my-2">
                                 <h4 className="font-semibold">Choose end waypoint 🚩</h4>
                                 {highlightedWaypoints.map((feature) => {
                                     const { id, name } = feature.properties as { id: number; name: string };
@@ -115,9 +114,20 @@ const Details = ({ mapRef, circleRef, radius, selectedWaypoint, interactions }: 
                                         </div>
                                     );
                                 })}
+                            </div> */}
+                            <div className="my-2">
+                                <h4 className="font-semibold">Nearby waypoints:</h4>
+                                {highlightedWaypoints.map((feature) => {
+                                    const { name } = feature.properties as { name: string };
+                                    return (
+                                        <ul className="flex gap-2 items-center">
+                                            <li>- {name}</li>
+                                        </ul>
+                                    );
+                                })}
                             </div>
 
-                            {endWaypointId && (
+                            {/* {endWaypointId && (
                                 <div className="my-2">
                                     <h4 className="font-semibold">Optional stops 🛑</h4>
                                     {filteredWaypoints.map((feature) => {
@@ -135,7 +145,7 @@ const Details = ({ mapRef, circleRef, radius, selectedWaypoint, interactions }: 
                                         );
                                     })}
                                 </div>
-                            )}
+                            )} */}
                         </>
                     )}
                     <div className="flex gap-2 mt-4">
