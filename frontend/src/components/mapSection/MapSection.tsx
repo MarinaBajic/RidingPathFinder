@@ -222,12 +222,12 @@ const MapSection = () => {
 
 
     return (
-        <div className="full-width bg-(--color-dark) scroll-mt-32 py-16">
+        <div className="full-width bg-(--color-dark) scroll-mt-32 flex gap-4 py-16">
             <h2 className="text-center text-3xl font-bold text-white mb-8">Rides and Trails in Serbia</h2>
+            <Instructions />
             <div className="flex gap-4">
                 <Map mapRef={mapRef} onInit={() => setIsMapReady(true)} />
                 <div className="flex gap-4 flex-col w-full max-w-[400px] mx-auto">
-                    <Instructions />
                     <Details
                         mapRef={mapRef}
                         circleRef={circleRef}
