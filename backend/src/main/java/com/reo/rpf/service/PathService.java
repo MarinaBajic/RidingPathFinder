@@ -7,11 +7,11 @@ import com.reo.rpf.model.PathSegment;
 import com.reo.rpf.repository.PathRepository;
 import com.reo.rpf.repository.PathSegmentRepository;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-
-import static com.reo.rpf.service.RoadService.getGeoJsonFeature;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +36,28 @@ public class PathService {
     }
 
     private GeoJsonFeature createGeoJsonFeature(PathSegment pathSegment) {
-        return getGeoJsonFeature(pathSegment.getGeom(), pathSegment.getName());
+        MultiLineString geom = pathSegment.getGeom();
+        List<List<List<Double>>> coordinates = new ArrayList<>();
+
+        for (int i = 0; i < geom.getNumGeometries(); i++) {
+            LineString lineString = (LineString) geom.getGeometryN(i);
+            List<List<Double>> lineCoordinates = Arrays.stream(lineString.getCoordinates())
+                    .map(coordinate -> List.of(coordinate.x, coordinate.y))
+                    .toList();
+
+            coordinates.add(lineCoordinates);
+        }
+
+        Map<String, Object> geometry = Map.of(
+                "type", "MultiLineString",
+                "coordinates", coordinates
+        );
+
+        Map<String, Object> properties = Map.of(
+                "name", pathSegment.getName() != null ? pathSegment.getName() : "Unknown Road",
+                "pathId", pathSegment.getPathId()
+        );
+
+        return new GeoJsonFeature("Feature", geometry, properties);
     }
 }

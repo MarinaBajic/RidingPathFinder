@@ -100,10 +100,7 @@ public class RoadService {
     }
 
     private GeoJsonFeature createGeoJsonFeature(Road road) {
-        return getGeoJsonFeature(road.getGeom(), road.getName());
-    }
-
-    static GeoJsonFeature getGeoJsonFeature(MultiLineString geom, String name) {
+        MultiLineString geom = road.getGeom();
         List<List<List<Double>>> coordinates = new ArrayList<>();
 
         for (int i = 0; i < geom.getNumGeometries(); i++) {
@@ -121,7 +118,7 @@ public class RoadService {
         );
 
         Map<String, Object> properties = Map.of(
-                "name", name != null ? name : "Unknown Road"
+                "name", road.getName() != null ? road.getName() : "Unknown Road"
         );
 
         return new GeoJsonFeature("Feature", geometry, properties);
