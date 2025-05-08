@@ -29,8 +29,8 @@ public class RoadService {
         Waypoint end = waypointRepository.findById(endWaypointId)
                 .orElseThrow(() -> new RuntimeException("End waypoint not found"));
 
-        Road startRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, start.getGeom()).getFirst();
-        Road endRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, end.getGeom()).getFirst();
+        Road startRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, start.getGeom());
+        Road endRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, end.getGeom());
 
 //        List<Road> roads = roadRepository.findPathBetweenNodes(startRoad.getTarget(), endRoad.getSource());
         List<Road> roads = List.of(startRoad, endRoad);
