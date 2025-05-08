@@ -31,8 +31,9 @@ public class PathSegment {
     @Column(name = "road_id")
     private Integer roadId;
 
-    @Column(name = "path_id")
-    private Integer pathId;
+    @ManyToOne
+    @JoinColumn(name = "path_id")
+    private Path path;
 
     @JsonIgnore
     @Column(name = "geom", columnDefinition = "geometry")

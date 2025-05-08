@@ -1,5 +1,6 @@
 package com.reo.rpf.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +24,8 @@ public class Path {
     @Column(name = "description", length = Integer.MAX_VALUE)
     private String description;
 
-    @OneToMany(mappedBy = "pathId", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToMany(mappedBy = "path", cascade = CascadeType.ALL)
     private List<PathSegment> segments = new ArrayList<>();
 
 }
