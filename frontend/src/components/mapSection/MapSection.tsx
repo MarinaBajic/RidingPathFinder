@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Button from "../button/Button";
 import Map from "../map/Map";
 import Instructions from "../instructions/Instructions";
-import { deleteWaypoint, fetchWaypointInfo, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
+import { deleteWaypoint, fetchNearbyFromRoad, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
 import { removeGeoJsonLayer, updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
 import L from "leaflet";
 import { fetchRoads } from "../../services/roadService";
@@ -96,10 +96,16 @@ const MapSection = () => {
     // };
 
     const handlePathClick = async (layer: L.Layer) => {
-        const id = (layer as L.Layer & { feature: { properties: { pathId: number } } }).feature.properties.pathId;
+        const pathId = (layer as L.Layer & { feature: { properties: { path_id: number } } }).feature.properties.path_id;
+        const roadId = (layer as L.Layer & { feature: { properties: { road_id: number } } }).feature.properties.road_id;
         try {
-            const data: Path = await fetchPathInfo(id);
+            console.log(layer)
+            const data: Path = await fetchPathInfo(pathId);
             setSelectedPath(data);
+
+            const nearbyWaypoints = await fetchNearbyFromRoad(roadId);
+            console.log('Nearby waypoints:', nearbyWaypoints);
+            
         }
         catch (error) {
             console.error('Error fetching path info:', error);
@@ -107,29 +113,34 @@ const MapSection = () => {
     };
 
     const handleWaypointClick = async (layer: L.Layer) => {
-        const id = (layer as L.Layer & { feature: { properties: { id: number } } }).feature.properties.id;
-        try {
-            resetMarkers();
-            const data: Waypoint = await fetchWaypointInfo(id);
-            setSelectedWaypoint(data);
+        resetMarkers();
 
-            const icon = getMarker('orange');
-            selectedMarkerRef.current = L.marker([data.latitude, data.longitude], {
-                icon,
-                zIndexOffset: 1
-            }).addTo(mapRef.current!);
+        const coordinates = (layer as L.Layer & { feature: { geometry: { coordinates: number[] } } }).feature.geometry.coordinates;
+        const properties = (layer as L.Layer & { feature: { properties: { id: number, name: string, fclass: string } } }).feature.properties;
 
-            circleRef.current = L.circle([data.latitude, data.longitude], {
-                radius,
-                color: 'orange',
-                fillColor: 'orange',
-                fillOpacity: 0.2,
-                weight: 1
-            }).addTo(mapRef.current!);
-        }
-        catch (error) {
-            console.error('Error fetching waypoint info:', error);
-        }
+        const data: Waypoint = {
+            id: properties.id,
+            name: properties.name,
+            fclass: properties.fclass,
+            latitude: coordinates[1],
+            longitude: coordinates[0],
+        };
+
+        setSelectedWaypoint(data);
+
+        const icon = getMarker('orange');
+        selectedMarkerRef.current = L.marker([data.latitude, data.longitude], {
+            icon,
+            zIndexOffset: 1
+        }).addTo(mapRef.current!);
+
+        circleRef.current = L.circle([data.latitude, data.longitude], {
+            radius,
+            color: 'orange',
+            fillColor: 'orange',
+            fillOpacity: 0.2,
+            weight: 1
+        }).addTo(mapRef.current!);
     };
 
     const resetMarkers = () => {
