@@ -23,7 +23,17 @@ public class WaypointService {
 
     private final WaypointRepository waypointRepository;
 
-    public GeoJson getNearbyFromLocation(double lat, double lng, double radius) {
+    public GeoJson getNearbyFromRoad(Integer roadId) {
+        List<Waypoint> nearbyWaypoints = waypointRepository.findNearbyFromRoad(roadId);
+
+        List<GeoJsonFeature> features = nearbyWaypoints.stream()
+                .map(this::createGeoJsonFeature)
+                .toList();
+
+        return new GeoJson("FeatureCollection", features);
+    }
+
+    public GeoJson getNearbyFromLocation(Double lat, Double lng, Double radius) {
         List<Waypoint> nearbyWaypoints = waypointRepository.findNearbyFromLocation(lat, lng, radius);
 
         List<GeoJsonFeature> features = nearbyWaypoints.stream()
@@ -33,7 +43,7 @@ public class WaypointService {
         return new GeoJson("FeatureCollection", features);
     }
 
-    public GeoJson getNearbyFromWaypoint(Integer id, double radius) {
+    public GeoJson getNearbyFromWaypoint(Integer id, Double radius) {
         List<Waypoint> nearbyWaypoints = waypointRepository.findNearbyFromWaypoint(id, radius);
 
         List<GeoJsonFeature> features = nearbyWaypoints.stream()
@@ -53,14 +63,14 @@ public class WaypointService {
         return true;
     }
 
-    public WaypointResponse getEntity(Integer id) {
-        Optional<Waypoint> waypointOptional = waypointRepository.findById(id);
-        if (waypointOptional.isEmpty()) {
-            return null;
-        }
-        Waypoint waypoint = waypointOptional.get();
-        return new WaypointResponse(waypoint.getId(), waypoint.getName(), waypoint.getFclass(), waypoint.getGeom().getY(), waypoint.getGeom().getX());
-    }
+//    public WaypointResponse getEntity(Integer id) {
+//        Optional<Waypoint> waypointOptional = waypointRepository.findById(id);
+//        if (waypointOptional.isEmpty()) {
+//            return null;
+//        }
+//        Waypoint waypoint = waypointOptional.get();
+//        return new WaypointResponse(waypoint.getId(), waypoint.getName(), waypoint.getFclass(), waypoint.getGeom().getY(), waypoint.getGeom().getX());
+//    }
 
     public WaypointResponse create(WaypointRequest waypointRequest) {
         Point location = new GeometryFactory().createPoint(new Coordinate(waypointRequest.longitude(), waypointRequest.latitude()));

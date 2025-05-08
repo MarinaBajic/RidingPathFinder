@@ -16,11 +16,17 @@ public class WaypointController {
 
     private final WaypointService waypointService;
 
+
+    @GetMapping("/nearby-road")
+    public ResponseEntity<GeoJson> getNearbyFromRoad(@RequestParam Integer roadId) {
+        return ResponseEntity.ok(waypointService.getNearbyFromRoad(roadId));
+    }
+
     @GetMapping("/nearby")
     public ResponseEntity<GeoJson> getNearbyFromLocation(
-            @RequestParam double lat,
-            @RequestParam double lng,
-            @RequestParam double radius
+            @RequestParam Double lat,
+            @RequestParam Double lng,
+            @RequestParam Double radius
     ) {
         return ResponseEntity.ok(waypointService.getNearbyFromLocation(lat, lng, radius));
     }
@@ -28,7 +34,7 @@ public class WaypointController {
     @GetMapping("/{id}/nearby")
     public ResponseEntity<GeoJson> getNearbyFromWaypoint(
             @PathVariable Integer id,
-            @RequestParam double radius
+            @RequestParam Double radius
     ) {
         return ResponseEntity.ok(waypointService.getNearbyFromWaypoint(id, radius));
     }
@@ -42,14 +48,14 @@ public class WaypointController {
         return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<WaypointResponse> getEntity(@PathVariable Integer id) {
-        WaypointResponse waypointResponse = waypointService.getEntity(id);
-        if (waypointResponse == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(waypointResponse, HttpStatus.OK);
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<WaypointResponse> getEntity(@PathVariable Integer id) {
+//        WaypointResponse waypointResponse = waypointService.getEntity(id);
+//        if (waypointResponse == null) {
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        }
+//        return new ResponseEntity<>(waypointResponse, HttpStatus.OK);
+//    }
 
     @PostMapping
     public ResponseEntity<WaypointResponse> create(@RequestBody WaypointRequest dto) {

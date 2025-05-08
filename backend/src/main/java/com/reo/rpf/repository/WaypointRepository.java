@@ -13,11 +13,20 @@ public interface WaypointRepository extends JpaRepository<Waypoint, Integer> {
     SELECT * FROM waypoint w
     WHERE ST_DWithin(
         w.geom::geography,
+        (SELECT geom FROM road WHERE id = :roadId)::geography,
+         100)
+    """, nativeQuery = true)
+    List<Waypoint> findNearbyFromRoad(@Param("roadId") Integer roadId);
+
+    @Query(value = """
+    SELECT * FROM waypoint w
+    WHERE ST_DWithin(
+        w.geom::geography,
         (SELECT geom FROM waypoint WHERE id = :id)::geography,
         :radius
     )
     AND w.id != :id
-""", nativeQuery = true)
+    """, nativeQuery = true)
     List<Waypoint> findNearbyFromWaypoint(@Param("id") Integer id, @Param("radius") double radius);
 
     @Query(value = """
