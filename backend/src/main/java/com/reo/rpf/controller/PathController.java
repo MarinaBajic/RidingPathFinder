@@ -17,6 +17,14 @@ public class PathController {
 
     private final PathService pathService;
 
+    @GetMapping("/segment/{id}")
+    public ResponseEntity<Path> getSegment(@PathVariable Integer id) {
+        if (pathService.get(id).isPresent()) {
+            return ResponseEntity.ok(pathService.get(id).get());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     @GetMapping("{id}")
     public ResponseEntity<Path> get(@PathVariable Integer id) {
         if (pathService.get(id).isPresent()) {

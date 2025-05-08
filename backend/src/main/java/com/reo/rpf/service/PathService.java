@@ -36,7 +36,7 @@ public class PathService {
     }
 
     private GeoJsonFeature createGeoJsonFeature(PathSegment pathSegment) {
-        MultiLineString geom = pathSegment.getGeom();
+         MultiLineString geom = pathSegment.getGeom();
         List<List<List<Double>>> coordinates = new ArrayList<>();
 
         for (int i = 0; i < geom.getNumGeometries(); i++) {
@@ -55,7 +55,8 @@ public class PathService {
 
         Map<String, Object> properties = Map.of(
                 "name", pathSegment.getName() != null ? pathSegment.getName() : "Unknown Road",
-                "pathId", pathSegment.getPathId()
+                "path_id", pathSegment.getPath().getId(),
+                "road_id", pathSegment.getRoadId()
         );
 
         return new GeoJsonFeature("Feature", geometry, properties);
