@@ -16,7 +16,7 @@ import { Path } from "../../types/Path";
 const MapSection = () => {
     const [selectedWaypoint, setSelectedWaypoint] = useState<Waypoint | null>(null);
     const [selectedPath, setSelectedPath] = useState<Path | null>(null);
-    const [radius, setRadius] = useState<number>(5000);
+    const [radius, setRadius] = useState<number>(1000);
 
     const [isMapReady, setIsMapReady] = useState(false);
     const [isAddingWaypoint, setIsAddingWaypoint] = useState(false);
@@ -27,6 +27,7 @@ const MapSection = () => {
     const roadLayerRef = useRef<L.GeoJSON | null>(null);
     const waypointLayerRef = useRef<L.GeoJSON | null>(null);
     const pathLayerRef = useRef<L.GeoJSON | null>(null);
+    const highlightedWaypointsLayerRef = useRef<L.GeoJSON | null>(null);
 
     const popupRef = useRef<L.Popup | null>(null);
     const selectedMarkerRef = useRef<L.Marker | null>(null);
@@ -134,8 +135,12 @@ const MapSection = () => {
     const resetMarkers = () => {
         selectedMarkerRef.current?.remove();
         selectedMarkerRef.current = null;
+
         circleRef.current?.remove();
         circleRef.current = null;
+
+        highlightedWaypointsLayerRef.current?.clearLayers();
+        highlightedWaypointsLayerRef.current = null;
     }
 
     const handleMapClick = (e: L.LeafletMouseEvent) => {
@@ -257,6 +262,7 @@ const MapSection = () => {
                     <Details
                         mapRef={mapRef}
                         circleRef={circleRef}
+                        highlightedWaypointsLayerRef={highlightedWaypointsLayerRef}
                         radius={radius}
                         selectedWaypoint={selectedWaypoint}
                         selectedPath={selectedPath}

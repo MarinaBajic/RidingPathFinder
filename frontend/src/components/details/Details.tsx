@@ -5,10 +5,12 @@ import { Waypoint } from "../../types/Waypoint";
 import Swal from "sweetalert2";
 import { fetchNearbyFromWaypoint } from "../../services/waypointService";
 import { Path } from "../../types/Path";
+import L from "leaflet";
 
 interface DetailsProps {
     mapRef: React.RefObject<L.Map | null>;
     circleRef: React.RefObject<L.Circle | null>;
+    highlightedWaypointsLayerRef: React.RefObject<L.GeoJSON | null>;
     radius: number;
     selectedWaypoint: Waypoint | null;
     selectedPath: Path | null;
@@ -19,8 +21,9 @@ interface DetailsProps {
     };
 }
 
-const Details = ({ mapRef, circleRef, radius, selectedWaypoint, selectedPath, interactions }: DetailsProps) => {
+const Details = ({ mapRef, circleRef, highlightedWaypointsLayerRef, radius, selectedWaypoint, selectedPath, interactions }: DetailsProps) => {
     const [highlightedWaypoints, setHighlightedWaypoints] = useState<GeoJSON.Feature[]>([]);
+
     // const [endWaypointId, setEndWaypointId] = useState<number | null>(null);
     // const [optionalWaypointsIds, setOptionalWaypointsIds] = useState<number[]>([]);
 
@@ -34,6 +37,26 @@ const Details = ({ mapRef, circleRef, radius, selectedWaypoint, selectedPath, in
         try {
             const data = await fetchNearbyFromWaypoint(id, radius);
             setHighlightedWaypoints(data.features);
+
+            if (!highlightedWaypointsLayerRef.current) {
+                highlightedWaypointsLayerRef.current = L.geoJSON().addTo(mapRef.current!);
+            }
+
+            highlightedWaypointsLayerRef.current.clearLayers();
+
+            data.features.forEach((feature: { geometry: { coordinates: any; }; }) => {
+                const { coordinates } = feature.geometry;
+                const [lng, lat] = coordinates;
+
+                const circle = L.circleMarker([lat, lng], {
+                    radius: 8,
+                    color: "red",
+                    fillColor: "red",
+                    fillOpacity: 1,
+                });
+
+                highlightedWaypointsLayerRef.current!.addLayer(circle);
+            });
         } catch (error) {
             console.error('Error fetching nearby waypoints:', error);
         }
@@ -86,9 +109,9 @@ const Details = ({ mapRef, circleRef, radius, selectedWaypoint, selectedPath, in
                         <input
                             type="range"
                             id="radius"
-                            min={1000}
-                            max={50000}
-                            step={1000}
+                            min={500}
+                            max={20000}
+                            step={500}
                             value={radius}
                             onChange={(e) => {
                                 const newRadius = Number(e.target.value);
