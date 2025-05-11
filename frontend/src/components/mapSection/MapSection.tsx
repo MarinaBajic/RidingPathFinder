@@ -82,7 +82,6 @@ const MapSection = () => {
 
     const handlePathClick = async (layer: L.Layer) => {
         const pathId = (layer as L.Layer & { feature: { properties: { path_id: number } } }).feature.properties.path_id;
-        const roadId = (layer as L.Layer & { feature: { properties: { road_id: number } } }).feature.properties.road_id;
         try {
             const data: Path = await fetchPathInfo(pathId);
             setSelectedPath(data);
