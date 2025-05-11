@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Button from "../button/Button";
 import Map from "../map/Map";
 import Instructions from "../instructions/Instructions";
-import { deleteWaypoint, fetchNearbyFromRoad, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
+import { deleteWaypoint, fetchNearbyFromPath, fetchNearbyFromRoad, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
 import { removeGeoJsonLayer, updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
 import L from "leaflet";
 import { fetchRoads } from "../../services/roadService";
@@ -84,11 +84,10 @@ const MapSection = () => {
         const pathId = (layer as L.Layer & { feature: { properties: { path_id: number } } }).feature.properties.path_id;
         const roadId = (layer as L.Layer & { feature: { properties: { road_id: number } } }).feature.properties.road_id;
         try {
-            console.log(layer)
             const data: Path = await fetchPathInfo(pathId);
             setSelectedPath(data);
 
-            const nearbyWaypoints = await fetchNearbyFromRoad(roadId);
+            const nearbyWaypoints = await fetchNearbyFromPath(pathId);
             console.log('Nearby waypoints:', nearbyWaypoints);
             
         }

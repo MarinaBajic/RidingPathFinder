@@ -1,6 +1,11 @@
 import { API_BASE } from "./mapService";
 
 
+export const fetchNearbyFromPath = async (path_id: number) => {
+	const res = await fetch(`${API_BASE}/waypoints/nearby-path?pathId=${path_id}`);
+	return await res.json()
+}
+
 export const fetchNearbyFromRoad = async (road_id: number) => {
 	const res = await fetch(`${API_BASE}/waypoints/nearby-road?roadId=${road_id}`);
 	return await res.json()
