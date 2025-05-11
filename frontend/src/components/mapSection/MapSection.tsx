@@ -80,21 +80,6 @@ const MapSection = () => {
         }
     };
 
-    // const displayPath = async (endWaypointId: number) => {
-    //     if (!mapRef.current) return;
-    //     const map = mapRef.current;
-
-    //     const bounds = map.getBounds();
-
-    //     try {
-    //         const data = await fetchPath(bounds, selectedWaypoint?.id as number, endWaypointId as number);
-    //         updateGeoJsonLayer(pathLayerRef, data, map, 'red');
-    //         console.log('Path data:', data);
-    //     } catch (error) {
-    //         console.error('Error fetching roads:', error);
-    //     }
-    // };
-
     const handlePathClick = async (layer: L.Layer) => {
         const pathId = (layer as L.Layer & { feature: { properties: { path_id: number } } }).feature.properties.path_id;
         const roadId = (layer as L.Layer & { feature: { properties: { road_id: number } } }).feature.properties.road_id;
@@ -280,7 +265,6 @@ const MapSection = () => {
                         interactions={{
                             setRadius,
                             handleDeleteWaypoint,
-                            // displayPath
                         }} />
                     {isAddingWaypoint && (
                         <p className="text-center text-white animate-pulse">
