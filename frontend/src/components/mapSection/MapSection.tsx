@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Button from "../button/Button";
 import Map from "../map/Map";
 import Instructions from "../instructions/Instructions";
-import { deleteWaypoint, fetchNearbyFromPath, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
+import { deleteWaypoint, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
 import { removeGeoJsonLayer, updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
 import L from "leaflet";
 import { fetchRoads } from "../../services/roadService";
@@ -60,7 +60,7 @@ const MapSection = () => {
 
         try {
             const data = await fetchPaths();
-            updateGeoJsonLayer(pathLayerRef, data, map, 'red', 6);
+            updateGeoJsonLayer(pathLayerRef, data, map, 'violet', 6);
             setupLayerClick(pathLayerRef, handlePathClick);
         } catch (error) {
             console.error('Error fetching roads:', error);
@@ -85,10 +85,6 @@ const MapSection = () => {
         try {
             const data: Path = await fetchPathInfo(pathId);
             setSelectedPath(data);
-
-            const nearbyWaypoints = await fetchNearbyFromPath(pathId);
-            console.log('Nearby waypoints:', nearbyWaypoints);
-            
         }
         catch (error) {
             console.error('Error fetching path info:', error);
