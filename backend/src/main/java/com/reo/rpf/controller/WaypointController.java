@@ -17,6 +17,11 @@ public class WaypointController {
     private final WaypointService waypointService;
 
 
+    @GetMapping("/nearby-path")
+    public ResponseEntity<GeoJson> getNearbyFromPath(@RequestParam Integer pathId) {
+        return ResponseEntity.ok(waypointService.getNearbyFromPath(pathId));
+    }
+
     @GetMapping("/nearby-road")
     public ResponseEntity<GeoJson> getNearbyFromRoad(@RequestParam Integer roadId) {
         return ResponseEntity.ok(waypointService.getNearbyFromRoad(roadId));

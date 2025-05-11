@@ -10,6 +10,17 @@ import java.util.List;
 public interface WaypointRepository extends JpaRepository<Waypoint, Integer> {
 
     @Query(value = """
+    SELECT DISTINCT w.*
+    FROM waypoint w
+    JOIN path_segment ps ON ST_DWithin(
+        w.geom,
+        ps.geom,
+        0.0009)
+    WHERE ps.path_id = :pathId
+    """, nativeQuery = true)
+    List<Waypoint> findNearbyFromPath(@Param("pathId") Integer pathId);
+
+    @Query(value = """
     SELECT * FROM waypoint w
     WHERE ST_DWithin(
         w.geom::geography,

@@ -23,6 +23,16 @@ public class WaypointService {
 
     private final WaypointRepository waypointRepository;
 
+    public GeoJson getNearbyFromPath(Integer pathId) {
+        List<Waypoint> nearbyWaypoints = waypointRepository.findNearbyFromPath(pathId);
+
+        List<GeoJsonFeature> features = nearbyWaypoints.stream()
+                .map(this::createGeoJsonFeature)
+                .toList();
+
+        return new GeoJson("FeatureCollection", features);
+    }
+
     public GeoJson getNearbyFromRoad(Integer roadId) {
         List<Waypoint> nearbyWaypoints = waypointRepository.findNearbyFromRoad(roadId);
 
