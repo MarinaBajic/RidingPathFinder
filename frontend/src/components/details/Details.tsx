@@ -57,6 +57,32 @@ const Details = ({ mapRef, circleRef, highlightedWaypointsLayerRef, radius, sele
         }
     };
 
+    const handleRadiusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newRadius = Number(e.target.value);
+        interactions.setRadius(newRadius);
+    };
+
+    const handleDeleteWaypoint = () => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: `You are about to delete a ${selectedWaypoint?.fclass} - ${selectedWaypoint?.name}!`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!",
+        }).then((result) => {
+            if (result.isConfirmed && selectedWaypoint) {
+                interactions.handleDeleteWaypoint(selectedWaypoint.id);
+                Swal.fire({
+                    title: "Deleted!",
+                    text: "Your waypoint has been deleted.",
+                    icon: "success",
+                });
+            }
+        });
+    };
+
 
     useEffect(() => {
         setHighlightedWaypoints([]);
@@ -87,10 +113,7 @@ const Details = ({ mapRef, circleRef, highlightedWaypointsLayerRef, radius, sele
 
             {selectedWaypoint && (
                 <div className="space-y-2">
-                    <label
-                        htmlFor="radius"
-                        className="text-sm font-semibold"
-                    >
+                    <label htmlFor="radius" className="text-sm font-semibold">
                         Radius: {radius / 1000}km
                     </label>
                     <input
@@ -100,10 +123,7 @@ const Details = ({ mapRef, circleRef, highlightedWaypointsLayerRef, radius, sele
                         max={20000}
                         step={500}
                         value={radius}
-                        onChange={(e) => {
-                            const newRadius = Number(e.target.value);
-                            interactions.setRadius(newRadius);
-                        }}
+                        onChange={handleRadiusChange}
                         className="w-full accent-green-700"
                     />
                 </div>
@@ -115,38 +135,14 @@ const Details = ({ mapRef, circleRef, highlightedWaypointsLayerRef, radius, sele
                     <ul>
                         {highlightedWaypoints.map((feature) => {
                             const { id, name } = feature.properties as { id: number, name: string };
-                            return (
-                                <li key={id}>- {name}</li>
-                            );
+                            return <li key={id}>- {name}</li>;
                         })}
                     </ul>
                 </div>
             )}
 
             {selectedWaypoint && (
-                <Button
-                    onClick={async () => {
-                        Swal.fire({
-                            title: "Are you sure?",
-                            text: `You are about to delete a ${selectedWaypoint.fclass} - ${selectedWaypoint.name}!`,
-                            icon: "warning",
-                            showCancelButton: true,
-                            confirmButtonColor: "#3085d6",
-                            cancelButtonColor: "#d33",
-                            confirmButtonText: "Yes, delete it!"
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                interactions.handleDeleteWaypoint(selectedWaypoint.id);
-                                Swal.fire({
-                                    title: "Deleted!",
-                                    text: "Your file has been deleted.",
-                                    icon: "success"
-                                });
-                            }
-                        });
-                    }}
-                    hierarchy="secondary"
-                >
+                <Button onClick={handleDeleteWaypoint} hierarchy="secondary">
                     Delete selected Waypoint
                 </Button>
             )}
