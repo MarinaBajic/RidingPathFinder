@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Button from "../button/Button";
 import Map from "../map/Map";
 import Instructions from "../instructions/Instructions";
-import { deleteWaypoint, fetchNearbyFromPath, fetchNearbyFromRoad, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
+import { deleteWaypoint, fetchNearbyFromPath, fetchWaypoints, saveWaypoint } from "../../services/waypointService";
 import { removeGeoJsonLayer, updateGeoJsonLayer, updateGeoJsonLayerMarkers } from "../../utils/geoJsonUtils";
 import L from "leaflet";
 import { fetchRoads } from "../../services/roadService";
