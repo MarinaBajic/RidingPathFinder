@@ -32,7 +32,6 @@ public class RoadService {
         Road startRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, start.getGeom());
         Road endRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, end.getGeom());
 
-//        List<Road> roads = roadRepository.findPathBetweenNodes(startRoad.getTarget(), endRoad.getSource());
         List<Road> roads = List.of(startRoad, endRoad);
 
         List<GeoJsonFeature> features = roads.stream()

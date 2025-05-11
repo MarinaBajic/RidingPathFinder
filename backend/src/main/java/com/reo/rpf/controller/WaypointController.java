@@ -22,11 +22,6 @@ public class WaypointController {
         return ResponseEntity.ok(waypointService.getNearbyFromPath(pathId));
     }
 
-    @GetMapping("/nearby-road")
-    public ResponseEntity<GeoJson> getNearbyFromRoad(@RequestParam Integer roadId) {
-        return ResponseEntity.ok(waypointService.getNearbyFromRoad(roadId));
-    }
-
     @GetMapping("/nearby")
     public ResponseEntity<GeoJson> getNearbyFromLocation(
             @RequestParam Double lat,
@@ -52,15 +47,6 @@ public class WaypointController {
         }
         return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
     }
-
-//    @GetMapping("/{id}")
-//    public ResponseEntity<WaypointResponse> getEntity(@PathVariable Integer id) {
-//        WaypointResponse waypointResponse = waypointService.getEntity(id);
-//        if (waypointResponse == null) {
-//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//        }
-//        return new ResponseEntity<>(waypointResponse, HttpStatus.OK);
-//    }
 
     @PostMapping
     public ResponseEntity<WaypointResponse> create(@RequestBody WaypointRequest dto) {
