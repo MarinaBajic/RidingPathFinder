@@ -3,16 +3,13 @@ import Button from "../button/Button";
 const Hero = () => {
 
     return (
-        <section id="home" className="flex flex-col gap-12 md:flex-row md:gap-0 items-center justify-between scroll-mt-32">
-            <div className="space-y-12 flex flex-col items-center md:items-start text-center md:text-left">
+        <section id="home" className="flex flex-col gap-12 lg:flex-row lg:gap-0 items-center justify-between scroll-mt-32">
+            <div className="space-y-12 flex flex-col items-center lg:items-start text-center lg:text-left">
                 <div>
                     <h1 className="text-7xl">Riding<br /> Path Finder</h1>
                     <p>Easily find Rides and Trails in Serbia!</p>
                 </div>
-                <div className="space-x-3">
-                    <Button href="#map">See Map</Button>
-                    <Button href="#" hierarchy="secondary">Find Paths</Button>
-                </div>
+                <Button href="#map">See Map</Button>
             </div>
             <div className="flex gap-6">
                 <div className="w-48 md:w-96 aspect-[3/4] bg-cover bg-right" style={{ backgroundImage: "url('src/assets/hero.jpg')" }}></div>
