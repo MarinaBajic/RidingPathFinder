@@ -11,7 +11,7 @@ export const fetchPathInfo = async (id: number) => {
 
 export const fetchPaths = async () => {
     // const url = `${API_BASE}/paths`;
-    const url = `${GEOSERVER_BASE}/ne/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ne%3Apath_segment&outputFormat=application%2Fjson`;
+    const url = `${GEOSERVER_BASE}/rpf/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=rpf%3Apaths&outputFormat=application%2Fjson`;
     const res = await fetch(url);
     return await res.json();
 }
