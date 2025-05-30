@@ -243,7 +243,7 @@ const MapSection = () => {
 
 
     return (
-        <div className="full-width bg-(--color-dark) scroll-mt-32 flex gap-4 py-16">
+        <section id="map" className="full-width bg-(--color-dark) scroll-mt-32 flex gap-4 py-16">
             <h2 className="text-center text-3xl font-bold text-white mb-8">Rides and Trails in Serbia</h2>
             <Instructions />
             <div className="flex gap-4">
@@ -275,7 +275,7 @@ const MapSection = () => {
                     </div>
                 </div>
             </div>
-        </div >
+        </section >
     )
 }
 
