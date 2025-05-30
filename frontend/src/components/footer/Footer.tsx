@@ -2,7 +2,7 @@ import Button from "../button/Button"
 
 const Footer = () => {
     return (
-        <footer className="flex flex-col gap-8 mb-6">
+        <footer id="about" className="flex flex-col gap-8 mb-6">
             <div className="flex justify-between items-center">
                 <div className="flex flex-col">
                     <span className="text-xs">Provided to you by</span>
