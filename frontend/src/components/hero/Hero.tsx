@@ -7,7 +7,7 @@ const Hero = () => {
             <div className="space-y-12">
                 <div>
                     <h1 className="text-7xl">Riding<br /> Path Finder</h1>
-                    <p>Get ready to ride!</p>
+                    <p>Easily find Rides and Trails in Serbia!</p>
                 </div>
                 <div className="space-x-3">
                     <Button href="#map">See Map</Button>
