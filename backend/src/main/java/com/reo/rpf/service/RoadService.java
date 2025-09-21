@@ -4,7 +4,6 @@ import com.reo.rpf.dto.GeoJson;
 import com.reo.rpf.dto.GeoJsonFeature;
 import com.reo.rpf.model.Road;
 import com.reo.rpf.repository.RoadRepository;
-import com.reo.rpf.repository.WaypointRepository;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
