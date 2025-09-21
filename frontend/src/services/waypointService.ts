@@ -6,15 +6,10 @@ export const fetchNearbyFromPath = async (path_id: number) => {
 	return await res.json()
 }
 
-export const fetchNearbyFromRoad = async (road_id: number) => {
-	const res = await fetch(`${API_BASE}/waypoints/nearby-road?roadId=${road_id}`);
-	return await res.json()
-}
-
-export const fetchNearbyFromLocation = async (lat: number, lng: number, radius: number) => {
-	const res = await fetch(`${API_BASE}/waypoints/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
-	return await res.json();
-};
+// export const fetchNearbyFromLocation = async (lat: number, lng: number, radius: number) => {
+// 	const res = await fetch(`${API_BASE}/waypoints/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
+// 	return await res.json();
+// };
 
 export const fetchNearbyFromWaypoint = async (id: number, radius: number) => {
 	const res = await fetch(`${API_BASE}/waypoints/${id}/nearby?radius=${radius}`);
