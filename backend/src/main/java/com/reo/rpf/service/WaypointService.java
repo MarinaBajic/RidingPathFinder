@@ -33,15 +33,15 @@ public class WaypointService {
         return new GeoJson("FeatureCollection", features);
     }
 
-    public GeoJson getNearbyFromLocation(Double lat, Double lng, Double radius) {
-        List<Waypoint> nearbyWaypoints = waypointRepository.findNearbyFromLocation(lat, lng, radius);
-
-        List<GeoJsonFeature> features = nearbyWaypoints.stream()
-                .map(this::createGeoJsonFeature)
-                .toList();
-
-        return new GeoJson("FeatureCollection", features);
-    }
+//    public GeoJson getNearbyFromLocation(Double lat, Double lng, Double radius) {
+//        List<Waypoint> nearbyWaypoints = waypointRepository.findNearbyFromLocation(lat, lng, radius);
+//
+//        List<GeoJsonFeature> features = nearbyWaypoints.stream()
+//                .map(this::createGeoJsonFeature)
+//                .toList();
+//
+//        return new GeoJson("FeatureCollection", features);
+//    }
 
     public GeoJson getNearbyFromWaypoint(Integer id, Double radius) {
         List<Waypoint> nearbyWaypoints = waypointRepository.findNearbyFromWaypoint(id, radius);

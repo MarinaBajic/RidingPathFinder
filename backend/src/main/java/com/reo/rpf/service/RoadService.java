@@ -23,24 +23,24 @@ public class RoadService {
     private final RoadRepository roadRepository;
     private final WaypointRepository waypointRepository;
 
-    public GeoJson findPathBetweenWaypoints(double minLng, double minLat, double maxLng, double maxLat, Integer startWaypointId, Integer endWaypointId) {
-        Waypoint start = waypointRepository.findById(startWaypointId)
-                .orElseThrow(() -> new RuntimeException("Start waypoint not found"));
-        Waypoint end = waypointRepository.findById(endWaypointId)
-                .orElseThrow(() -> new RuntimeException("End waypoint not found"));
-
-        Road startRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, start.getGeom());
-        Road endRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, end.getGeom());
-
-        List<Road> roads = List.of(startRoad, endRoad);
-
-        List<GeoJsonFeature> features = roads.stream()
-                .filter(road -> road.getGeom() != null)
-                .map(this::createGeoJsonFeature)
-                .toList();
-
-        return new GeoJson("FeatureCollection", features);
-    }
+//    public GeoJson findPathBetweenWaypoints(double minLng, double minLat, double maxLng, double maxLat, Integer startWaypointId, Integer endWaypointId) {
+//        Waypoint start = waypointRepository.findById(startWaypointId)
+//                .orElseThrow(() -> new RuntimeException("Start waypoint not found"));
+//        Waypoint end = waypointRepository.findById(endWaypointId)
+//                .orElseThrow(() -> new RuntimeException("End waypoint not found"));
+//
+//        Road startRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, start.getGeom());
+//        Road endRoad = roadRepository.findNearestRoad(minLng, minLat, maxLng, maxLat, end.getGeom());
+//
+//        List<Road> roads = List.of(startRoad, endRoad);
+//
+//        List<GeoJsonFeature> features = roads.stream()
+//                .filter(road -> road.getGeom() != null)
+//                .map(this::createGeoJsonFeature)
+//                .toList();
+//
+//        return new GeoJson("FeatureCollection", features);
+//    }
 
     public GeoJson get(Double minLng, Double minLat, Double maxLng, Double maxLat, Integer zoom) {
         List<String> roadClasses = getRoadClasses(zoom);

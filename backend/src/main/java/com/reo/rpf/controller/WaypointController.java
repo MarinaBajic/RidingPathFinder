@@ -22,14 +22,14 @@ public class WaypointController {
         return ResponseEntity.ok(waypointService.getNearbyFromPath(pathId));
     }
 
-    @GetMapping("/nearby")
-    public ResponseEntity<GeoJson> getNearbyFromLocation(
-            @RequestParam Double lat,
-            @RequestParam Double lng,
-            @RequestParam Double radius
-    ) {
-        return ResponseEntity.ok(waypointService.getNearbyFromLocation(lat, lng, radius));
-    }
+//    @GetMapping("/nearby")
+//    public ResponseEntity<GeoJson> getNearbyFromLocation(
+//            @RequestParam Double lat,
+//            @RequestParam Double lng,
+//            @RequestParam Double radius
+//    ) {
+//        return ResponseEntity.ok(waypointService.getNearbyFromLocation(lat, lng, radius));
+//    }
 
     @GetMapping("/{id}/nearby")
     public ResponseEntity<GeoJson> getNearbyFromWaypoint(

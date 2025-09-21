@@ -17,13 +17,13 @@ public class PathController {
 
     private final PathService pathService;
 
-    @GetMapping("/segment/{id}")
-    public ResponseEntity<Path> getSegment(@PathVariable Integer id) {
-        if (pathService.get(id).isPresent()) {
-            return ResponseEntity.ok(pathService.get(id).get());
-        }
-        return ResponseEntity.notFound().build();
-    }
+//    @GetMapping("/segment/{id}")
+//    public ResponseEntity<Path> getSegment(@PathVariable Integer id) {
+//        if (pathService.get(id).isPresent()) {
+//            return ResponseEntity.ok(pathService.get(id).get());
+//        }
+//        return ResponseEntity.notFound().build();
+//    }
 
     @GetMapping("{id}")
     public ResponseEntity<Path> get(@PathVariable Integer id) {
@@ -33,6 +33,7 @@ public class PathController {
         return ResponseEntity.notFound().build();
     }
 
+    // umesto ovoga dobavlja sa geoservera
     @GetMapping
     public ResponseEntity<GeoJson> get() {
         return ResponseEntity.ok(pathService.get());

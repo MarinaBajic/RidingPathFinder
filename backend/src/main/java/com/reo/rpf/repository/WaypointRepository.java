@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface WaypointRepository extends JpaRepository<Waypoint, Integer> {
 
+    // 0.0009 stepeni je oko 100 metara
     @Query(value = """
     SELECT DISTINCT w.*
     FROM waypoint w
@@ -31,15 +32,15 @@ public interface WaypointRepository extends JpaRepository<Waypoint, Integer> {
     """, nativeQuery = true)
     List<Waypoint> findNearbyFromWaypoint(@Param("id") Integer id, @Param("radius") double radius);
 
-    @Query(value = """
-    SELECT * FROM waypoint w
-    WHERE ST_DWithin(
-        w.geom::geography,
-        ST_SetSRID(ST_MakePoint(:lat, :lng), 4326)::geography,
-        :radius
-    )
-""", nativeQuery = true)
-    List<Waypoint> findNearbyFromLocation(@Param("lat") Double lat, @Param("lng") Double lng, @Param("radius") Double radius);
+//    @Query(value = """
+//    SELECT * FROM waypoint w
+//    WHERE ST_DWithin(
+//        w.geom::geography,
+//        ST_SetSRID(ST_MakePoint(:lat, :lng), 4326)::geography,
+//        :radius
+//    )
+//""", nativeQuery = true)
+//    List<Waypoint> findNearbyFromLocation(@Param("lat") Double lat, @Param("lng") Double lng, @Param("radius") Double radius);
 
     @Query("SELECT w FROM Waypoint w WHERE " +
             "ST_Within(w.geom, ST_MakeEnvelope(:minLng, :minLat, :maxLng, :maxLat, 4326)) " +

@@ -13,15 +13,15 @@ public class RoadController {
 
     private final RoadService roadService;
 
-    @GetMapping("/path")
-    public ResponseEntity<GeoJson> getPath(@RequestParam double minLng,
-                                           @RequestParam double minLat,
-                                           @RequestParam double maxLng,
-                                           @RequestParam double maxLat,
-                                           @RequestParam Integer startId,
-                                           @RequestParam Integer endId) {
-        return ResponseEntity.ok(roadService.findPathBetweenWaypoints(minLng, minLat, maxLng, maxLat, startId, endId));
-    }
+//    @GetMapping("/path")
+//    public ResponseEntity<GeoJson> getPath(@RequestParam double minLng,
+//                                           @RequestParam double minLat,
+//                                           @RequestParam double maxLng,
+//                                           @RequestParam double maxLat,
+//                                           @RequestParam Integer startId,
+//                                           @RequestParam Integer endId) {
+//        return ResponseEntity.ok(roadService.findPathBetweenWaypoints(minLng, minLat, maxLng, maxLat, startId, endId));
+//    }
 
     @GetMapping
     public ResponseEntity<GeoJson> get(@RequestParam Double minLng,
