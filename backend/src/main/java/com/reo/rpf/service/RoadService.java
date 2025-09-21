@@ -3,7 +3,6 @@ package com.reo.rpf.service;
 import com.reo.rpf.dto.GeoJson;
 import com.reo.rpf.dto.GeoJsonFeature;
 import com.reo.rpf.model.Road;
-import com.reo.rpf.model.Waypoint;
 import com.reo.rpf.repository.RoadRepository;
 import com.reo.rpf.repository.WaypointRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ import java.util.Map;
 public class RoadService {
 
     private final RoadRepository roadRepository;
-    private final WaypointRepository waypointRepository;
+//    private final WaypointRepository waypointRepository;
 
 //    public GeoJson findPathBetweenWaypoints(double minLng, double minLat, double maxLng, double maxLat, Integer startWaypointId, Integer endWaypointId) {
 //        Waypoint start = waypointRepository.findById(startWaypointId)
